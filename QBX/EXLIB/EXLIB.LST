@@ -1,0 +1,3699 @@
+                                                                      PAGE   1
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0030   0006    DECLARE FUNCTION GetSysLang$ ()
+ 0030   0006    DECLARE SUB CenterText (x1!, x2!, y!, text$)
+ 0030   0006    '$INCLUDE: 'exlib.bi'
+ 0030   0006    '$INCLUDE: 'c:\dev\basic\qbx\src\qbx.bi'
+ 0030   0006    '***
+ 0030   0006    ' QBX.BI - Assembly Support Include File
+ 0030   0006    '
+ 0030   0006    '       Copyright <C> 1987-1989 Microsoft Corporation
+ 0030   0006    '
+ 0030   0006    ' Purpose:
+ 0030   0006    '      This include file defines the types and gives the DECLAR
+                E
+ 0030   0006    '       statements for the assembly language routines Absolute,
+ 0030   0006    '       Interrupt, InterruptX, Int86Old, and Int86XOld.
+ 0030   0006    '
+ 0030   0006    '**************************************************************
+                *************
+ 0030   0006    '
+ 0030   0006    ' Define the type needed for Interrupt
+ 0030   0006    '
+ 0030   0006    TYPE RegType
+ 0030   0006         ax    AS INTEGER
+ 0030   0006         bx    AS INTEGER
+ 0030   0006         cx    AS INTEGER
+ 0030   0006         dx    AS INTEGER
+ 0030   0006         bp    AS INTEGER
+ 0030   0006         si    AS INTEGER
+ 0030   0006         di    AS INTEGER
+ 0030   0006         flags AS INTEGER
+ 0030   0006    END TYPE
+ 0030   0006    '
+ 0030   0006    ' Define the type needed for InterruptX
+ 0030   0006    '
+ 0030   0006    TYPE RegTypeX
+ 0030   0006         ax    AS INTEGER
+ 0030   0006         bx    AS INTEGER
+ 0030   0006         cx    AS INTEGER
+ 0030   0006         dx    AS INTEGER
+ 0030   0006         bp    AS INTEGER
+ 0030   0006         si    AS INTEGER
+ 0030   0006         di    AS INTEGER
+ 0030   0006         flags AS INTEGER
+ 0030   0006         ds    AS INTEGER
+ 0030   0006         es    AS INTEGER
+ 0030   0006    END TYPE
+ 0030   0006    '
+ 0030   0006    '                 DECLARE statements for the 5 routines
+ 0030   0006    '                 -------------------------------------
+ 0030   0006    '
+ 0030   0006    ' Generate a software interrupt, loading all but the segment re
+                gisters
+ 0030   0006    '
+ 0030   0006    DECLARE SUB Interrupt (intnum AS INTEGER,inreg AS RegType,outre
+                g AS RegType)
+                                                                      PAGE   2
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0030   0006    '
+ 0030   0006    ' Generate a software interrupt, loading all registers
+ 0030   0006    '
+ 0030   0006    DECLARE SUB InterruptX (intnum AS INTEGER,inreg AS RegTypeX, ou
+                treg AS RegTypeX)
+ 0030   0006    '
+ 0030   0006    ' Call a routine at an absolute address.
+ 0030   0006    ' NOTE: If the routine called takes parameters, then they will 
+                have to
+ 0030   0006    '       be added to this declare statement before the parameter
+                 given.
+ 0030   0006    '
+ 0030   0006    DECLARE SUB Absolute (address AS INTEGER)
+ 0030   0006    '
+ 0030   0006    ' Generate a software interrupt, loading all but the segment re
+                gisters
+ 0030   0006    '       (old version)
+ 0030   0006    '
+ 0030   0006    DECLARE SUB Int86Old (intnum AS INTEGER,_
+ 0030   0006                          inarray(1) AS INTEGER,_
+ 0030   0006                          outarray(1) AS INTEGER)
+ 0030   0006    '
+ 0030   0006    ' Generate a software interrupt, loading all the registers
+ 0030   0006    '       (old version)
+ 0030   0006    '
+ 0030   0006    DECLARE SUB Int86XOld (intnum AS INTEGER,_
+ 0030   0006                           inarray(1) AS INTEGER,_
+ 0030   0006                           outarray(1) AS INTEGER)
+ 0030   0006    '
+ 0030   0006    
+ 0030   0006    CONST FALSE = 0
+ 0030   0006    CONST TRUE = -1
+ 0030   0006    CONST MINROW = 2
+ 0030   0006    CONST MAXROW = 25
+ 0030   0006    CONST MINCOL = 1
+ 0030   0006    CONST MAXCOL = 80
+ 0030   0006    CONST MAXMENU = 10
+ 0030   0006    CONST MAXITEM = 20
+ 0030   0006    CONST MAXWINDOW = 10
+ 0030   0006    CONST MAXBUTTON = 50
+ 0030   0006    CONST MAXEDITFIELD = 20
+ 0030   0006    CONST MAXHOTSPOT = 20
+ 0030   0006    
+ 0030   0006    ' #########################   Mouse     #######################
+                ##
+ 0030   0006    
+ 0030   0006    DECLARE SUB MousePoll (row, col, lButton, rButton)
+ 0030   0006    DECLARE SUB MouseBorder (row1, col1, row2, col2)
+ 0030   0006    DECLARE SUB MouseShow ()
+ 0030   0006    DECLARE SUB MouseHide ()
+ 0030   0006    DECLARE SUB MouseInit ()
+ 0030   0006    DECLARE SUB MouseCallDriver (m0!, m1!, m2!, m3!)
+ 0030   0006    COMMON SHARED /uitools/ MousePresent AS INTEGER
+ 0030   0006    
+                                                                      PAGE   3
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0030   0006    '##########################   Keyboard   ######################
+                ##
+ 0030   0006    
+ 0030   0006    DECLARE FUNCTION GetKey$ ()
+ 0030   0006    DECLARE SUB PressAnyKey ()
+ 0030   0006    DECLARE SUB PressEsc ()
+ 0030   0006    
+ 0030   0006    ' #########################   Windows     #####################
+                ###
+ 0030   0006    TYPE WndType
+ 0030   0006            frameColor AS INTEGER
+ 0030   0006            backColor AS INTEGER
+ 0030   0006            frameType AS INTEGER
+ 0030   0006            canClose AS INTEGER
+ 0030   0006    END TYPE
+ 0030   0006    
+ 0030   0006    DECLARE SUB WndDraw (x1, y1, x2, y2, wnd AS WndType, title$)
+ 0030   0006    DECLARE SUB WndPutc (x, y, code)
+ 0030   0006    DECLARE SUB WndPuthl (x1, x2, y, code)
+ 0030   0006    DECLARE SUB WndPutvl (x, y1, y2, code)
+ 0030   0006    
+ 0030   0006    ' #########################   Misc    #########################
+                ##
+ 0030   0006    DECLARE SUB Init ()
+ 0030   0006    DECLARE SUB Delay (ms)
+ 0030   0006    DECLARE FUNCTION GetDate$ ()
+ 0030   0006    DECLARE FUNCTION SearchWord! (a() AS STRING, word$)
+ 0030   0006    DECLARE SUB SaveScreen (num%)
+ 0030   0006    DECLARE SUB LoadScreen (num%)
+ 0030   0006    DECLARE FUNCTION ToStr$ (num!)
+ 0030   0006    DECLARE FUNCTION ToZeroStr$ (num!, length)
+ 0030   0006    DECLARE FUNCTION InputStr$ (x%, y%, maxLen%)
+ 0030   0006    DECLARE SUB ShowCaret ()
+ 0030   0006    DECLARE SUB HideCaret ()
+ 0030   0006    DECLARE SUB PrintStr (x%, y%, st$)
+ 0030   0006    DECLARE SUB SetFColor (fCol)
+ 0030   0006    DECLARE SUB SetBColor (bCol)
+ 0030   0006    DECLARE SUB SetColor (fCol, bCol)
+ 0030   0006    DECLARE FUNCTION GetFColor ()
+ 0030   0006    DECLARE FUNCTION GetBColor ()
+ 0030   0006    DECLARE SUB SetPos (x%, y%)
+ 0030   0006    DECLARE FUNCTION GetSysLang$ ()
+ 0030   0006    
+ 0030   0006    
+ 0030   0006    ' INTERNAL DECLARATIONS
+ 0030   0006    DECLARE SUB InsertSym (s$, ch$, nPos%)
+ 0030   0006    DECLARE SUB ShiftStrLeft (s$, stPos%)
+ 0030   0006    DECLARE FUNCTION Min% (a1%, a2%)
+ 0030   0006    DECLARE FUNCTION Max% (a1%, a2%)
+ 0030   0006    DECLARE SUB Do2 (ch$, s$, x%, y%, maxLen%)
+ 0030   0006    DECLARE SUB DoBack (s$, x%, y%, maxLen%)
+ 0030   0006    DECLARE SUB DoChar (s$, ch$, x%, y%, maxLen%)
+ 0030   0006    DECLARE SUB DoKey (s$, ch$, x%, y%, maxLen%)
+ 0030   0006    DECLARE SUB RestoreStr (s$, x%, y%, maxLen%, oldPos%)
+                                                                      PAGE   4
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0030   0006    DECLARE SUB DelSym (s$, delPos%, x%, y%, maxLen%)
+ 0030   0006    
+ 0030   0006    COMMON SHARED fColor AS INTEGER
+ 0030   0006    COMMON SHARED bColor AS INTEGER
+ 0030   0006    
+ 0030   0006    COMMON SHARED isCaretVisible AS INTEGER
+ 0030   0006    COMMON SHARED xCaretPos AS INTEGER
+ 0030   0006    COMMON SHARED yCaretPos AS INTEGER
+ 0030   0006    
+ 0030   0006    
+ 0030   0006    '#############################   Mouse   ######################
+                ########
+ 0030   0006    CLS
+ 0030    **        I00002:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+                                                                      PAGE   5
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030    **        L00000:
+ 0030   0006    Init
+ 0030    **        L00000:   mov     ax,0FFFFh
+ 0033    **                  push    ax
+ 0034    **                  call    B$SCLS
+ 0039    **        L00000:   call    INIT
+ 003E   0006    's$ = InputStr$(10, 10, 10)
+ 003E   0006    'LOCATE 11, 10
+ 003E   0006    'PRINT s$
+ 003E   0006    'instr
+ 003E   0006    'CALL ShiftStrLeft(s$, 2)
+ 003E   0006    'PRINT s$
+ 003E   0006    'nPos = 2
+ 003E   0006    'CALL InsertSym(s$, "E", 4)
+ 003E   0006    's$ = InputStr$(10, 10, 10)
+ 003E   0006    'PRINT s$
+ 003E   0006    
+ 003E   0006    'PRINT GetSysLang$
+ 003E   0006    'Init
+ 003E   0006    DIM wnd AS WndType
+ 003E   000E    wnd.frameType = 2
+ 003E   000E    wnd.canClose = FALSE
+ 003E   000E    'CALL ShowCaret
+ 003E   000E    
+ 003E   000E    'CALL WndDraw(1, 1, 80, 25, wnd, " Hello ")
+                                                                      PAGE   6
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 003E   000E    
+ 003E   000E    SetPos 30, 20
+ 003E    **        L00000:
+ 003E    **        L00000:   mov     WND+0004h,0002h
+ 0044    **        L00000:   mov     WND+0006h,0000h
+ 004A    **        L00000:   mov     t000E%,001Eh
+ 0050    **                  mov     t0010%,0014h
+ 0056    **                  mov     ax,offset t000E%
+ 0059    **                  push    ax
+ 005A    **                  mov     ax,offset t0010%
+ 005D    **                  push    ax
+ 005E    **                  call    SETPOS
+ 0063   0012    ShowCaret
+ 0063    **        L00000:   call    SHOWCARET
+ 0068   0012    'PrintStr 10, 10, "dd"
+ 0068   0012    'SetPos 30, 20
+ 0068   0012    'ShowCaret
+ 0068   0012    
+ 0068   0012    PressAnyKey
+ 0068    **        L00000:   call    PRESSANYKEY
+ 006D   0012    
+ 006D   0012    HideCaret
+ 006D    **        L00000:   call    HIDECARET
+ 0072   0012    
+ 0072   0012    PressAnyKey
+ 0072    **        L00000:   call    PRESSANYKEY
+ 0077   0012    
+ 0077   0012    SUB CenterText (x1, x2, y, text$)
+ 0077    **        L00000:   jmp     I00003
+ 007A    **        CENTERTEXT:
+ 007A    **                  mov     cx,0000h
+ 007D    **                  mov     bx,0000h
+ 0080    **                  call    B$ENRA
+ 0085   0012            xPos = (x2 - x1) / 2 - LEN(text$) / 2
+ 0085   0012            IF xPos > 0 THEN
+ 0085   0012                    LOCATE y, x1 + xPos
+ 0085   0012                    PRINT text$
+ 0085   0012            END IF
+ 0085    **        L00000:   mov     si,0Ah[bp]
+ 0088    **                  int     35h
+ 008A    **                  db      04h
+ 008B    **                  mov     si,0Ch[bp]
+ 008E    **                  int     34h
+ 0090    **                  db      24h
+ 0091    **                  int     34h
+ 0093    **                  db      36h
+ 0094    **                  dw      <00000040>
+ 0096    **                  push    06h[bp]
+ 0099    **                  call    B$FLEN
+ 009E    **                  call    B$FIL2
+ 00A3    **                  int     34h
+ 00A5    **                  db      36h
+ 00A6    **                  dw      <00000040>
+ 00A8    **                  int     3Ah
+                                                                      PAGE   7
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 00AA    **                  db      0E9h
+ 00AB    **                  int     35h
+ 00AD    **                  db      5Eh
+ 00AE    **                  db      0EAh
+ 00AF    **                  int     3Dh
+ 00B1    **        L00000:   int     35h
+ 00B3    **                  db      06h
+ 00B4    **                  dw      <00000000>
+ 00B6    **                  int     35h
+ 00B8    **                  db      46h
+ 00B9    **                  db      0EAh
+ 00BA    **                  int     3Dh
+ 00BC    **                  call    B$FCMP
+ 00C1    **                  jna     I00005
+ 00C3    **        L00000:   mov     ax,0001h
+ 00C6    **                  push    ax
+ 00C7    **                  mov     si,08h[bp]
+ 00CA    **                  int     35h
+ 00CC    **                  db      04h
+ 00CD    **                  call    B$FIS2
+ 00D2    **                  push    ax
+ 00D3    **                  mov     ax,0001h
+ 00D6    **                  push    ax
+ 00D7    **                  mov     si,0Ch[bp]
+ 00DA    **                  int     35h
+ 00DC    **                  db      04h
+ 00DD    **                  int     34h
+ 00DF    **                  db      46h
+ 00E0    **                  db      0EAh
+ 00E1    **                  call    B$FIS2
+ 00E6    **                  push    ax
+ 00E7    **                  mov     ax,0004h
+ 00EA    **                  push    ax
+ 00EB    **                  call    B$LOCT
+ 00F0    **        L00000:   push    06h[bp]
+ 00F3    **                  call    B$PESD
+ 00F8    **        L00000:
+ 00F8   0012    END SUB
+ 00F8    **        I00005:
+ 00F8    **        L00000:
+ 00F8    **        I00004:   call    B$EXSA
+ 00FD    **                  ret     0008h
+ 0100   0012    
+ 0100   0012    SUB Delay (ms)
+ 0100    **        I00003:
+ 0100    **        L00000:   jmp     I00006
+ 0103    **        DELAY:    mov     cx,0000h
+ 0106    **                  mov     bx,0000h
+ 0109    **                  call    B$ENRA
+ 010E   0012            start# = TIMER
+ 010E   0012            DO
+ 010E    **        L00000:   call    B$TIMR
+ 0113    **                  mov     si,ax
+ 0115    **                  int     35h
+                                                                      PAGE   8
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0117    **                  db      04h
+ 0118    **                  int     39h
+ 011A    **                  db      5Eh
+ 011B    **                  db      0E6h
+ 011C    **                  int     3Dh
+ 011E    **        L00000:
+ 011E   0012            LOOP UNTIL TIMER - start# > .001 * ms
+ 011E   0012    END SUB
+ 011E    **        I00008:
+ 011E    **        L00000:   mov     si,06h[bp]
+ 0121    **                  int     35h
+ 0123    **                  db      04h
+ 0124    **                  int     34h
+ 0126    **                  db      0Eh
+ 0127    **                  dw      <6F12833A>
+ 0129    **                  call    B$TIMR
+ 012E    **                  mov     si,ax
+ 0130    **                  int     35h
+ 0132    **                  db      04h
+ 0133    **                  int     38h
+ 0135    **                  db      66h
+ 0136    **                  db      0E6h
+ 0137    **                  int     3Dh
+ 0139    **                  call    B$FCMP
+ 013E    **                  jna     I00008
+ 0140    **        L00000:
+ 0140    **        I00007:   call    B$EXSA
+ 0145    **                  ret     0002h
+ 0148   0012    
+ 0148   0012    SUB DelSym (s$, delPos%, x%, y%, maxLen%)
+ 0148    **        I00006:
+ 0148    **        L00000:   jmp     I00009
+ 014B    **        DELSYM:   mov     cx,0000h
+ 014E    **                  mov     bx,0000h
+ 0151    **                  call    B$ENRA
+ 0156   0012            oldPos% = delPos%
+ 0156   0012            CALL ShiftStrLeft(s$, oldPos% - x% + 1)
+ 0156    **        L00000:   mov     si,0Ch[bp]
+ 0159    **                  mov     ax,[si]
+ 015B    **                  mov     0ECh[bp],ax
+ 015E    **        L00000:   mov     si,0Ah[bp]
+ 0161    **                  mov     ax,0ECh[bp]
+ 0164    **                  sub     ax,[si]
+ 0166    **                  inc     ax
+ 0167    **                  mov     0EAh[bp],ax
+ 016A    **                  push    0Eh[bp]
+ 016D    **                  lea     ax,0EAh[bp]
+ 0170    **                  push    ax
+ 0171    **                  call    SHIFTSTRLEFT
+ 0176   0012            CALL RestoreStr(s$, x%, y%, maxLen%, oldPos%)
+ 0176    **        L00000:   push    0Eh[bp]
+ 0179    **                  push    0Ah[bp]
+ 017C    **                  push    08h[bp]
+ 017F    **                  push    06h[bp]
+                                                                      PAGE   9
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0182    **                  lea     ax,0ECh[bp]
+ 0185    **                  push    ax
+ 0186    **                  call    RESTORESTR
+ 018B   0012    END SUB
+ 018B    **        L00000:
+ 018B    **        I00010:   call    B$EXSA
+ 0190    **                  ret     000Ah
+ 0193   0012    
+ 0193   0012    SUB Do2 (ch$, s$, x%, y%, maxLen%)
+ 0193    **        I00009:
+ 0193    **        L00000:   jmp     I00011
+ 0196    **        DO2:      mov     cx,0000h
+ 0199    **                  mov     bx,0000h
+ 019C    **                  call    B$ENRA
+ 01A1   0012            IF ch$ = CHR$(0) + CHR$(75) THEN    ' left
+ 01A1   0012                    LOCATE y%, Max(x%, POS(0) - 1)
+ 01A1   0012            ELSEIF ch$ = CHR$(0) + CHR$(77) THEN ' right
+ 01A1    **        L00000:   xor     ax,ax
+ 01A3    **                  push    ax
+ 01A4    **                  call    B$FCHR
+ 01A9    **                  push    ax
+ 01AA    **                  mov     ax,004Bh
+ 01AD    **                  push    ax
+ 01AE    **                  call    B$FCHR
+ 01B3    **                  push    ax
+ 01B4    **                  call    B$SCAT
+ 01B9    **                  push    ax
+ 01BA    **                  push    0Eh[bp]
+ 01BD    **                  call    B$SCMP
+ 01C2    **                  jne     I00013
+ 01C4    **        L00000:   xor     ax,ax
+ 01C6    **                  push    ax
+ 01C7    **                  call    B$FPOS
+ 01CC    **                  dec     ax
+ 01CD    **                  mov     0ECh[bp],ax
+ 01D0    **                  push    0Ah[bp]
+ 01D3    **                  lea     ax,0ECh[bp]
+ 01D6    **                  push    ax
+ 01D7    **                  call    MAX%
+ 01DC    **                  mov     0EAh[bp],ax
+ 01DF    **                  mov     ax,0001h
+ 01E2    **                  push    ax
+ 01E3    **                  mov     si,08h[bp]
+ 01E6    **                  push    [si]
+ 01E8    **                  push    ax
+ 01E9    **                  push    0EAh[bp]
+ 01EC    **                  mov     ax,0004h
+ 01EF    **                  push    ax
+ 01F0    **                  call    B$LOCT
+ 01F5    **        L00000:   jmp     I00014
+ 01F8   0012                    LOCATE y%, Min(x% + LEN(s$), POS(0) + 1)
+ 01F8   0012            ELSEIF ch$ = CHR$(0) + CHR$(71) THEN ' home
+ 01F8    **        I00013:   xor     ax,ax
+ 01FA    **                  push    ax
+                                                                      PAGE  10
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 01FB    **                  call    B$FCHR
+ 0200    **                  push    ax
+ 0201    **                  mov     ax,004Dh
+ 0204    **                  push    ax
+ 0205    **                  call    B$FCHR
+ 020A    **                  push    ax
+ 020B    **                  call    B$SCAT
+ 0210    **                  push    ax
+ 0211    **                  push    0Eh[bp]
+ 0214    **                  call    B$SCMP
+ 0219    **                  jne     I00015
+ 021B    **        L00000:   mov     si,0Ah[bp]
+ 021E    **                  mov     ax,[si]
+ 0220    **                  push    0Ch[bp]
+ 0223    **                  mov     0E2h[bp],ax
+ 0226    **                  call    B$FLEN
+ 022B    **                  add     ax,0E2h[bp]
+ 022E    **                  mov     0E8h[bp],ax
+ 0231    **                  xor     ax,ax
+ 0233    **                  push    ax
+ 0234    **                  call    B$FPOS
+ 0239    **                  inc     ax
+ 023A    **                  mov     0E6h[bp],ax
+ 023D    **                  lea     ax,0E8h[bp]
+ 0240    **                  push    ax
+ 0241    **                  lea     ax,0E6h[bp]
+ 0244    **                  push    ax
+ 0245    **                  call    MIN%
+ 024A    **                  mov     0E4h[bp],ax
+ 024D    **                  mov     ax,0001h
+ 0250    **                  push    ax
+ 0251    **                  mov     si,08h[bp]
+ 0254    **                  push    [si]
+ 0256    **                  push    ax
+ 0257    **                  push    0E4h[bp]
+ 025A    **                  mov     ax,0004h
+ 025D    **                  push    ax
+ 025E    **                  call    B$LOCT
+ 0263    **        L00000:   jmp     I00014
+ 0266   0012                    LOCATE y%, x%
+ 0266   0012            ELSEIF ch$ = CHR$(0) + CHR$(79) THEN ' end
+ 0266    **        I00015:   xor     ax,ax
+ 0268    **                  push    ax
+ 0269    **                  call    B$FCHR
+ 026E    **                  push    ax
+ 026F    **                  mov     ax,0047h
+ 0272    **                  push    ax
+ 0273    **                  call    B$FCHR
+ 0278    **                  push    ax
+ 0279    **                  call    B$SCAT
+ 027E    **                  push    ax
+ 027F    **                  push    0Eh[bp]
+ 0282    **                  call    B$SCMP
+ 0287    **                  jne     I00016
+                                                                      PAGE  11
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0289    **        L00000:   mov     ax,0001h
+ 028C    **                  push    ax
+ 028D    **                  mov     si,08h[bp]
+ 0290    **                  push    [si]
+ 0292    **                  push    ax
+ 0293    **                  mov     si,0Ah[bp]
+ 0296    **                  push    [si]
+ 0298    **                  mov     ax,0004h
+ 029B    **                  push    ax
+ 029C    **                  call    B$LOCT
+ 02A1    **        L00000:   jmp     I00014
+ 02A4   0012                    LOCATE y%, x% + LEN(s$)
+ 02A4   0012            ELSEIF ch$ = CHR$(0) + CHR$(83) THEN ' del
+ 02A4    **        I00016:   xor     ax,ax
+ 02A6    **                  push    ax
+ 02A7    **                  call    B$FCHR
+ 02AC    **                  push    ax
+ 02AD    **                  mov     ax,004Fh
+ 02B0    **                  push    ax
+ 02B1    **                  call    B$FCHR
+ 02B6    **                  push    ax
+ 02B7    **                  call    B$SCAT
+ 02BC    **                  push    ax
+ 02BD    **                  push    0Eh[bp]
+ 02C0    **                  call    B$SCMP
+ 02C5    **                  jne     I00017
+ 02C7    **        L00000:   mov     ax,0001h
+ 02CA    **                  push    ax
+ 02CB    **                  mov     si,08h[bp]
+ 02CE    **                  push    [si]
+ 02D0    **                  push    ax
+ 02D1    **                  mov     si,0Ah[bp]
+ 02D4    **                  mov     ax,[si]
+ 02D6    **                  push    0Ch[bp]
+ 02D9    **                  mov     0E0h[bp],ax
+ 02DC    **                  call    B$FLEN
+ 02E1    **                  add     ax,0E0h[bp]
+ 02E4    **                  push    ax
+ 02E5    **                  mov     ax,0004h
+ 02E8    **                  push    ax
+ 02E9    **                  call    B$LOCT
+ 02EE    **        L00000:   jmp     I00014
+ 02F1   0012                    CALL DelSym(s$, POS(0), x%, y%, maxLen%)
+ 02F1    **        I00017:   xor     ax,ax
+ 02F3    **                  push    ax
+ 02F4    **                  call    B$FCHR
+ 02F9    **                  push    ax
+ 02FA    **                  mov     ax,0053h
+ 02FD    **                  push    ax
+ 02FE    **                  call    B$FCHR
+ 0303    **                  push    ax
+ 0304    **                  call    B$SCAT
+ 0309    **                  push    ax
+ 030A    **                  push    0Eh[bp]
+                                                                      PAGE  12
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 030D    **                  call    B$SCMP
+ 0312    **                  je      $+03h
+ 0314    **                  jmp     I00018
+ 0317    **        L00000:   xor     ax,ax
+ 0319    **                  push    ax
+ 031A    **                  call    B$FPOS
+ 031F    **                  mov     0DEh[bp],ax
+ 0322    **                  push    0Ch[bp]
+ 0325    **                  lea     ax,0DEh[bp]
+ 0328    **                  push    ax
+ 0329    **                  push    0Ah[bp]
+ 032C    **                  push    08h[bp]
+ 032F    **                  push    06h[bp]
+ 0332    **                  call    DELSYM
+ 0337   0012            END IF
+ 0337    **        L00000:
+ 0337    **        I00014:
+ 0337   0012    END SUB
+ 0337    **        I00018:
+ 0337    **        L00000:
+ 0337    **        I00012:   call    B$EXSA
+ 033C    **                  ret     000Ah
+ 033F   0012    
+ 033F   0012    SUB DoBack (s$, x%, y%, maxLen%)
+ 033F    **        I00011:
+ 033F    **        L00000:   jmp     I00019
+ 0342    **        DOBACK:   mov     cx,0000h
+ 0345    **                  mov     bx,0000h
+ 0348    **                  call    B$ENRA
+ 034D   0012            IF POS(0) > x% THEN
+ 034D   0012                    CALL DelSym(s$, POS(0) - 1, x%, y%, maxLen%)
+ 034D    **        L00000:   xor     ax,ax
+ 034F    **                  push    ax
+ 0350    **                  call    B$FPOS
+ 0355    **                  mov     si,0Ah[bp]
+ 0358    **                  cmp     ax,[si]
+ 035A    **                  jg      $+03h
+ 035C    **                  jmp     I00021
+ 035F    **        L00000:   xor     ax,ax
+ 0361    **                  push    ax
+ 0362    **                  call    B$FPOS
+ 0367    **                  dec     ax
+ 0368    **                  mov     0ECh[bp],ax
+ 036B    **                  push    0Ch[bp]
+ 036E    **                  lea     ax,0ECh[bp]
+ 0371    **                  push    ax
+ 0372    **                  push    0Ah[bp]
+ 0375    **                  push    08h[bp]
+ 0378    **                  push    06h[bp]
+ 037B    **                  call    DELSYM
+ 0380   0012            END IF
+ 0380    **        L00000:
+ 0380   0012    END SUB
+ 0380    **        I00021:
+                                                                      PAGE  13
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0380    **        L00000:
+ 0380    **        I00020:   call    B$EXSA
+ 0385    **                  ret     0008h
+ 0388   0012    
+ 0388   0012    SUB DoChar (s$, ch$, x%, y%, maxLen%)
+ 0388    **        I00019:
+ 0388    **        L00000:   jmp     I00022
+ 038B    **        DOCHAR:   mov     cx,0000h
+ 038E    **                  mov     bx,0000h
+ 0391    **                  call    B$ENRA
+ 0396   0012            IF LEN(s$) < maxLen% THEN
+ 0396   0012                    CALL InsertSym(s$, ch$, POS(0) - x% + 1)
+ 0396    **        L00000:   mov     si,06h[bp]
+ 0399    **                  mov     ax,[si]
+ 039B    **                  push    0Eh[bp]
+ 039E    **                  mov     0ECh[bp],ax
+ 03A1    **                  call    B$FLEN
+ 03A6    **                  cmp     ax,0ECh[bp]
+ 03A9    **                  jl      $+03h
+ 03AB    **                  jmp     I00024
+ 03AE    **        L00000:   xor     ax,ax
+ 03B0    **                  push    ax
+ 03B1    **                  call    B$FPOS
+ 03B6    **                  mov     si,0Ah[bp]
+ 03B9    **                  sub     ax,[si]
+ 03BB    **                  inc     ax
+ 03BC    **                  mov     0EAh[bp],ax
+ 03BF    **                  push    0Eh[bp]
+ 03C2    **                  push    0Ch[bp]
+ 03C5    **                  lea     ax,0EAh[bp]
+ 03C8    **                  push    ax
+ 03C9    **                  call    INSERTSYM
+ 03CE   0012                    LOCATE y%, POS(0) + 1, 1
+ 03CE   0012                    CALL RestoreStr(s$, x%, y%, maxLen%, POS(0))
+ 03CE    **        L00000:   mov     ax,0001h
+ 03D1    **                  push    ax
+ 03D2    **                  mov     si,08h[bp]
+ 03D5    **                  push    [si]
+ 03D7    **                  push    ax
+ 03D8    **                  xor     ax,ax
+ 03DA    **                  push    ax
+ 03DB    **                  call    B$FPOS
+ 03E0    **                  inc     ax
+ 03E1    **                  push    ax
+ 03E2    **                  mov     ax,0001h
+ 03E5    **                  push    ax
+ 03E6    **                  push    ax
+ 03E7    **                  mov     ax,0006h
+ 03EA    **                  push    ax
+ 03EB    **                  call    B$LOCT
+ 03F0    **        L00000:   xor     ax,ax
+ 03F2    **                  push    ax
+ 03F3    **                  call    B$FPOS
+ 03F8    **                  mov     0E8h[bp],ax
+                                                                      PAGE  14
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 03FB    **                  push    0Eh[bp]
+ 03FE    **                  push    0Ah[bp]
+ 0401    **                  push    08h[bp]
+ 0404    **                  push    06h[bp]
+ 0407    **                  lea     ax,0E8h[bp]
+ 040A    **                  push    ax
+ 040B    **                  call    RESTORESTR
+ 0410   0012            END IF
+ 0410    **        L00000:
+ 0410   0012    END SUB
+ 0410    **        I00024:
+ 0410    **        L00000:
+ 0410    **        I00023:   call    B$EXSA
+ 0415    **                  ret     000Ah
+ 0418   0012    
+ 0418   0012    SUB DoKey (s$, ch$, x%, y%, maxLen%)
+ 0418    **        I00022:
+ 0418    **        L00000:   jmp     I00025
+ 041B    **        DOKEY:    mov     cx,0000h
+ 041E    **                  mov     bx,0000h
+ 0421    **                  call    B$ENRA
+ 0426   0012            IF LEN(ch$) = 2 THEN
+ 0426   0012                    CALL Do2(ch$, s$, x%, y%, maxLen%)
+ 0426    **        L00000:   push    0Ch[bp]
+ 0429    **                  call    B$FLEN
+ 042E    **                  cmp     ax,0002h
+ 0431    **                  je      $+03h
+ 0433    **                  jmp     I00027
+ 0436    **        L00000:   push    0Ch[bp]
+ 0439    **                  push    0Eh[bp]
+ 043C    **                  push    0Ah[bp]
+ 043F    **                  push    08h[bp]
+ 0442    **                  push    06h[bp]
+ 0445    **                  call    DO2
+ 044A   0012            END IF
+ 044A    **        L00000:
+ 044A   0012    
+ 044A   0012            IF LEN(ch$) = 1 THEN
+ 044A   0012                    IF ch$ = CHR$(8) THEN
+ 044A   0012                            CALL DoBack(s$, x%, y%, maxLen%)
+ 044A    **        I00027:
+ 044A    **        L00000:   push    0Ch[bp]
+ 044D    **                  call    B$FLEN
+ 0452    **                  cmp     ax,0001h
+ 0455    **                  je      $+03h
+ 0457    **                  jmp     I00028
+ 045A    **        L00000:   mov     ax,0008h
+ 045D    **                  push    ax
+ 045E    **                  call    B$FCHR
+ 0463    **                  push    ax
+ 0464    **                  push    0Ch[bp]
+ 0467    **                  call    B$SCMP
+ 046C    **                  je      $+03h
+ 046E    **                  jmp     I00029
+                                                                      PAGE  15
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0471    **        L00000:   push    0Eh[bp]
+ 0474    **                  push    0Ah[bp]
+ 0477    **                  push    08h[bp]
+ 047A    **                  push    06h[bp]
+ 047D    **                  call    DOBACK
+ 0482   0012                    ELSEIF ch$ <> CHR$(9) THEN
+ 0482    **        L00000:   jmp     I00030
+ 0485   0012                            CALL DoChar(s$, ch$, x%, y%, maxLen%)
+ 0485    **        I00029:   mov     ax,0009h
+ 0488    **                  push    ax
+ 0489    **                  call    B$FCHR
+ 048E    **                  push    ax
+ 048F    **                  push    0Ch[bp]
+ 0492    **                  call    B$SCMP
+ 0497    **                  jne     $+03h
+ 0499    **                  jmp     I00031
+ 049C    **        L00000:   push    0Eh[bp]
+ 049F    **                  push    0Ch[bp]
+ 04A2    **                  push    0Ah[bp]
+ 04A5    **                  push    08h[bp]
+ 04A8    **                  push    06h[bp]
+ 04AB    **                  call    DOCHAR
+ 04B0   0012                    END IF
+ 04B0    **        L00000:
+ 04B0    **        I00030:
+ 04B0   0012            END IF
+ 04B0    **        I00031:
+ 04B0    **        L00000:
+ 04B0   0012    END SUB
+ 04B0    **        I00028:
+ 04B0    **        L00000:
+ 04B0    **        I00026:   call    B$EXSA
+ 04B5    **                  ret     000Ah
+ 04B8   0012    
+ 04B8   0012    FUNCTION GetBColor
+ 04B8    **        I00025:
+ 04B8    **        L00000:   jmp     I00032
+ 04BB    **        GETBCOLOR!:
+ 04BB    **                  mov     cx,0000h
+ 04BE    **                  mov     bx,0000h
+ 04C1    **                  call    B$ENRA
+ 04C6   0012            GetBColor = bColor
+ 04C6   0012    END FUNCTION
+ 04C6    **        L00000:   int     3Bh
+ 04C8    **                  db      06h
+ 04C9    **                  dw      BCOLOR%
+ 04CB    **                  mov     si,06h[bp]
+ 04CE    **                  int     35h
+ 04D0    **                  db      1Ch
+ 04D1    **                  int     3Dh
+ 04D3    **        L00000:
+ 04D3    **        I00033:   mov     ax,06h[bp]
+ 04D6    **                  call    B$EXSA
+ 04DB    **                  ret     0002h
+                                                                      PAGE  16
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 04DE   0012    
+ 04DE   0012    FUNCTION GetDate$
+ 04DE    **        I00032:
+ 04DE    **        L00000:   jmp     I00034
+ 04E1    **        GETDATE$: mov     cx,0000h
+ 04E4    **                  mov     bx,0000h
+ 04E7    **                  call    B$ENRA
+ 04EC   0012            d$ = DATE$
+ 04EC   0012    
+ 04EC   0012            day$ = MID$(d$, 4, 2)
+ 04EC   0012            month$ = MID$(d$, 1, 2)
+ 04EC   0012            year$ = MID$(d$, 7, 4)
+ 04EC   0012    
+ 04EC   0012            GetDate$ = day$ + "-" + month$ + "-" + year$
+ 04EC   0012    
+ 04EC   0012    END FUNCTION
+ 04EC    **        L00000:   call    B$FDAT
+ 04F1    **                  push    ax
+ 04F2    **                  lea     ax,0EAh[bp]
+ 04F5    **                  push    ax
+ 04F6    **                  call    B$SASS
+ 04FB    **        L00000:   lea     ax,0EAh[bp]
+ 04FE    **                  push    ax
+ 04FF    **                  mov     ax,0004h
+ 0502    **                  push    ax
+ 0503    **                  mov     ax,0002h
+ 0506    **                  push    ax
+ 0507    **                  call    B$FMID
+ 050C    **                  push    ax
+ 050D    **                  lea     ax,0E6h[bp]
+ 0510    **                  push    ax
+ 0511    **                  call    B$SASS
+ 0516    **        L00000:   lea     ax,0EAh[bp]
+ 0519    **                  push    ax
+ 051A    **                  mov     ax,0001h
+ 051D    **                  push    ax
+ 051E    **                  mov     ax,0002h
+ 0521    **                  push    ax
+ 0522    **                  call    B$FMID
+ 0527    **                  push    ax
+ 0528    **                  lea     ax,0E2h[bp]
+ 052B    **                  push    ax
+ 052C    **                  call    B$SASS
+ 0531    **        L00000:   lea     ax,0EAh[bp]
+ 0534    **                  push    ax
+ 0535    **                  mov     ax,0007h
+ 0538    **                  push    ax
+ 0539    **                  mov     ax,0004h
+ 053C    **                  push    ax
+ 053D    **                  call    B$FMID
+ 0542    **                  push    ax
+ 0543    **                  lea     ax,0DEh[bp]
+ 0546    **                  push    ax
+ 0547    **                  call    B$SASS
+                                                                      PAGE  17
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 054C    **        L00000:   lea     ax,0E6h[bp]
+ 054F    **                  push    ax
+ 0550    **                  mov     ax,offset <const>
+ 0553    **                  push    ax
+ 0554    **                  call    B$SCAT
+ 0559    **                  push    ax
+ 055A    **                  lea     ax,0E2h[bp]
+ 055D    **                  push    ax
+ 055E    **                  call    B$SCAT
+ 0563    **                  push    ax
+ 0564    **                  mov     ax,offset <const>
+ 0567    **                  push    ax
+ 0568    **                  call    B$SCAT
+ 056D    **                  push    ax
+ 056E    **                  lea     ax,0DEh[bp]
+ 0571    **                  push    ax
+ 0572    **                  call    B$SCAT
+ 0577    **                  push    ax
+ 0578    **                  lea     ax,0DAh[bp]
+ 057B    **                  push    ax
+ 057C    **                  call    B$SASS
+ 0581    **        L00000:
+ 0581    **        I00035:   lea     ax,0DAh[bp]
+ 0584    **                  push    ax
+ 0585    **                  call    B$SCPF
+ 058A    **                  call    B$EXSA
+ 058F    **                  ret     0000h
+ 0592   0012    
+ 0592   0012    FUNCTION GetFColor
+ 0592    **        I00034:
+ 0592    **        L00000:   jmp     I00036
+ 0595    **        GETFCOLOR!:
+ 0595    **                  mov     cx,0000h
+ 0598    **                  mov     bx,0000h
+ 059B    **                  call    B$ENRA
+ 05A0   0012            GetFColor = fColor
+ 05A0   0012    END FUNCTION
+ 05A0    **        L00000:   int     3Bh
+ 05A2    **                  db      06h
+ 05A3    **                  dw      FCOLOR%
+ 05A5    **                  mov     si,06h[bp]
+ 05A8    **                  int     35h
+ 05AA    **                  db      1Ch
+ 05AB    **                  int     3Dh
+ 05AD    **        L00000:
+ 05AD    **        I00037:   mov     ax,06h[bp]
+ 05B0    **                  call    B$EXSA
+ 05B5    **                  ret     0002h
+ 05B8   0012    
+ 05B8   0012    FUNCTION GetKey$
+ 05B8    **        I00036:
+ 05B8    **        L00000:   jmp     I00038
+ 05BB    **        GETKEY$:  mov     cx,0000h
+ 05BE    **                  mov     bx,0000h
+                                                                      PAGE  18
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 05C1    **                  call    B$ENRA
+ 05C6   0012            DO
+ 05C6    **        L00000:
+ 05C6   0012                    ch$ = INKEY$
+ 05C6   0012    
+ 05C6   0012            LOOP WHILE ch$ = ""
+ 05C6   0012            GetKey$ = ch$
+ 05C6   0012    
+ 05C6   0012    END FUNCTION
+ 05C6    **        I00040:
+ 05C6    **        L00000:   call    B$INKY
+ 05CB    **                  push    ax
+ 05CC    **                  lea     ax,0EAh[bp]
+ 05CF    **                  push    ax
+ 05D0    **                  call    B$SASS
+ 05D5    **        L00000:   lea     ax,0EAh[bp]
+ 05D8    **                  push    ax
+ 05D9    **                  mov     ax,offset <const>
+ 05DC    **                  push    ax
+ 05DD    **                  call    B$SCMP
+ 05E2    **                  je      I00040
+ 05E4    **        L00000:   lea     ax,0EAh[bp]
+ 05E7    **                  push    ax
+ 05E8    **                  lea     ax,0E6h[bp]
+ 05EB    **                  push    ax
+ 05EC    **                  call    B$SASS
+ 05F1    **        L00000:
+ 05F1    **        I00039:   lea     ax,0E6h[bp]
+ 05F4    **                  push    ax
+ 05F5    **                  call    B$SCPF
+ 05FA    **                  call    B$EXSA
+ 05FF    **                  ret     0000h
+ 0602   0012    
+ 0602   0012    FUNCTION GetSysLang$
+ 0602    **        I00038:
+ 0602    **        L00000:   jmp     I00041
+ 0605    **        GETSYSLANG$:
+ 0605    **                  mov     cx,0000h
+ 0608    **                  mov     bx,0000h
+ 060B    **                  call    B$ENRA
+ 0610   0012            GetSysLang$ = ENVIRON$("LANG")
+ 0610   0012    END FUNCTION
+ 0610    **        L00000:   mov     ax,offset <const>
+ 0613    **                  push    ax
+ 0614    **                  call    B$FEVS
+ 0619    **                  push    ax
+ 061A    **                  lea     ax,0EAh[bp]
+ 061D    **                  push    ax
+ 061E    **                  call    B$SASS
+ 0623    **        L00000:
+ 0623    **        I00042:   lea     ax,0EAh[bp]
+ 0626    **                  push    ax
+ 0627    **                  call    B$SCPF
+ 062C    **                  call    B$EXSA
+                                                                      PAGE  19
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0631    **                  ret     0000h
+ 0634   0012    
+ 0634   0012    SUB HideCaret
+ 0634    **        I00041:
+ 0634    **        L00000:   jmp     I00043
+ 0637    **        HIDECARET:
+ 0637    **                  mov     cx,0000h
+ 063A    **                  mov     bx,0000h
+ 063D    **                  call    B$ENRA
+ 0642   0012            SHARED isCaretVisible AS INTEGER
+ 0642   0012    
+ 0642   0012            isCaretVisible = 0
+ 0642   0012    
+ 0642   0012            SetPos xCaretPos%, yCaretPos%
+ 0642    **        L00000:
+ 0642    **        L00000:   mov     ISCARETVISIBLE%,0000h
+ 0648    **        L00000:   mov     ax,offset XCARETPOS%
+ 064B    **                  push    ax
+ 064C    **                  mov     ax,offset YCARETPOS%
+ 064F    **                  push    ax
+ 0650    **                  call    SETPOS
+ 0655   0012    END SUB
+ 0655    **        L00000:
+ 0655    **        I00044:   call    B$EXSA
+ 065A    **                  ret     0000h
+ 065D   0012    
+ 065D   0012    SUB Init
+ 065D    **        I00043:
+ 065D    **        L00000:   jmp     I00045
+ 0660    **        INIT:     mov     cx,0000h
+ 0663    **                  mov     bx,0000h
+ 0666    **                  call    B$ENRA
+ 066B   0012            SetPos 1, 1
+ 066B    **        L00000:   mov     0ECh[bp],0001h
+ 0670    **                  mov     0EAh[bp],0001h
+ 0675    **                  lea     ax,0ECh[bp]
+ 0678    **                  push    ax
+ 0679    **                  lea     ax,0EAh[bp]
+ 067C    **                  push    ax
+ 067D    **                  call    SETPOS
+ 0682   0012            HideCaret
+ 0682    **        L00000:   call    HIDECARET
+ 0687   0012            SetColor 7, 0
+ 0687    **        L00000:   int     35h
+ 0689    **                  db      06h
+ 068A    **                  dw      <0000E040>
+ 068C    **                  int     35h
+ 068E    **                  db      5Eh
+ 068F    **                  db      0E6h
+ 0690    **                  int     3Dh
+ 0692    **                  int     35h
+ 0694    **                  db      06h
+ 0695    **                  dw      <00000000>
+ 0697    **                  int     35h
+                                                                      PAGE  20
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0699    **                  db      5Eh
+ 069A    **                  db      0E2h
+ 069B    **                  int     3Dh
+ 069D    **                  lea     ax,0E6h[bp]
+ 06A0    **                  push    ax
+ 06A1    **                  lea     ax,0E2h[bp]
+ 06A4    **                  push    ax
+ 06A5    **                  call    SETCOLOR
+ 06AA   0012    END SUB
+ 06AA    **        L00000:
+ 06AA    **        I00046:   call    B$EXSA
+ 06AF    **                  ret     0000h
+ 06B2   0012    
+ 06B2   0012    FUNCTION InputStr$ (x%, y%, maxLen%)
+ 06B2    **        I00045:
+ 06B2    **        L00000:   jmp     I00047
+ 06B5    **        INPUTSTR$:
+ 06B5    **                  mov     cx,0000h
+ 06B8    **                  mov     bx,0000h
+ 06BB    **                  call    B$ENRA
+ 06C0   0012            SetPos x%, y%
+ 06C0    **        L00000:   push    0Ah[bp]
+ 06C3    **                  push    08h[bp]
+ 06C6    **                  call    SETPOS
+ 06CB   0012            s$ = ""
+ 06CB   0012            DO
+ 06CB    **        L00000:   mov     ax,offset <const>
+ 06CE    **                  push    ax
+ 06CF    **                  lea     ax,0EAh[bp]
+ 06D2    **                  push    ax
+ 06D3    **                  call    B$SASS
+ 06D8    **        L00000:
+ 06D8   0012                    ch$ = INKEY$
+ 06D8   0012                    IF ch$ <> "" AND ch$ <> CHR$(27) AND ch$ <> CHR
+                $(13) THEN
+ 06D8   0012                            CALL DoKey(s$, ch$, x%, y%, maxLen%)
+ 06D8    **        I00049:
+ 06D8    **        L00000:   call    B$INKY
+ 06DD    **                  push    ax
+ 06DE    **                  lea     ax,0E6h[bp]
+ 06E1    **                  push    ax
+ 06E2    **                  call    B$SASS
+ 06E7    **        L00000:   lea     ax,0E6h[bp]
+ 06EA    **                  push    ax
+ 06EB    **                  mov     ax,offset <const>
+ 06EE    **                  push    ax
+ 06EF    **                  call    B$SCMP
+ 06F4    **                  jne     $+03h
+ 06F6    **                  jmp     I00050
+ 06F9    **                  mov     ax,001Bh
+ 06FC    **                  push    ax
+ 06FD    **                  call    B$FCHR
+ 0702    **                  push    ax
+ 0703    **                  lea     ax,0E6h[bp]
+                                                                      PAGE  21
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0706    **                  push    ax
+ 0707    **                  call    B$SCMP
+ 070C    **                  jne     $+03h
+ 070E    **                  jmp     I00050
+ 0711    **                  mov     ax,000Dh
+ 0714    **                  push    ax
+ 0715    **                  call    B$FCHR
+ 071A    **                  push    ax
+ 071B    **                  lea     ax,0E6h[bp]
+ 071E    **                  push    ax
+ 071F    **                  call    B$SCMP
+ 0724    **                  jne     $+03h
+ 0726    **                  jmp     I00050
+ 0729    **        L00000:   lea     ax,0EAh[bp]
+ 072C    **                  push    ax
+ 072D    **                  lea     ax,0E6h[bp]
+ 0730    **                  push    ax
+ 0731    **                  push    0Ah[bp]
+ 0734    **                  push    08h[bp]
+ 0737    **                  push    06h[bp]
+ 073A    **                  call    DOKEY
+ 073F   0012                    END IF
+ 073F    **        L00000:
+ 073F   0012            LOOP WHILE ch$ <> CHR$(13)
+ 073F   0012    
+ 073F   0012            InputStr$ = s$
+ 073F   0012    END FUNCTION
+ 073F    **        I00050:
+ 073F    **        L00000:   mov     ax,000Dh
+ 0742    **                  push    ax
+ 0743    **                  call    B$FCHR
+ 0748    **                  push    ax
+ 0749    **                  lea     ax,0E6h[bp]
+ 074C    **                  push    ax
+ 074D    **                  call    B$SCMP
+ 0752    **                  jne     I00049
+ 0754    **        L00000:   lea     ax,0EAh[bp]
+ 0757    **                  push    ax
+ 0758    **                  lea     ax,0E2h[bp]
+ 075B    **                  push    ax
+ 075C    **                  call    B$SASS
+ 0761    **        L00000:
+ 0761    **        I00048:   lea     ax,0E2h[bp]
+ 0764    **                  push    ax
+ 0765    **                  call    B$SCPF
+ 076A    **                  call    B$EXSA
+ 076F    **                  ret     0006h
+ 0772   0012    
+ 0772   0012    ' inserts symbol ch$ into the string s$ at the position nPos%
+ 0772   0012    SUB InsertSym (s$, ch$, nPos%)
+ 0772    **        I00047:
+ 0772    **        L00000:   jmp     I00051
+ 0775    **        INSERTSYM:
+ 0775    **                  mov     cx,0000h
+                                                                      PAGE  22
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0778    **                  mov     bx,0000h
+ 077B    **                  call    B$ENRA
+ 0780   0012            s$ = MID$(s$, 1, nPos% - 1) + ch$ + MID$(s$, nPos%)
+ 0780   0012    END SUB
+ 0780    **        L00000:   push    0Ah[bp]
+ 0783    **                  mov     ax,0001h
+ 0786    **                  push    ax
+ 0787    **                  mov     si,06h[bp]
+ 078A    **                  mov     cx,[si]
+ 078C    **                  mov     bx,cx
+ 078E    **                  dec     cx
+ 078F    **                  push    cx
+ 0790    **                  mov     0ECh[bp],bx
+ 0793    **                  call    B$FMID
+ 0798    **                  push    ax
+ 0799    **                  push    08h[bp]
+ 079C    **                  call    B$SCAT
+ 07A1    **                  push    ax
+ 07A2    **                  push    0Ah[bp]
+ 07A5    **                  push    0ECh[bp]
+ 07A8    **                  mov     ax,7FFFh
+ 07AB    **                  push    ax
+ 07AC    **                  call    B$FMID
+ 07B1    **                  push    ax
+ 07B2    **                  call    B$SCAT
+ 07B7    **                  push    ax
+ 07B8    **                  push    0Ah[bp]
+ 07BB    **                  call    B$SASS
+ 07C0    **        L00000:
+ 07C0    **        I00052:   call    B$EXSA
+ 07C5    **                  ret     0006h
+ 07C8   0012    
+ 07C8   0012    SUB LoadScreen (num%)
+ 07C8    **        I00051:
+ 07C8    **        L00000:   jmp     I00053
+ 07CB    **        LOADSCREEN:
+ 07CB    **                  mov     cx,0000h
+ 07CE    **                  mov     bx,0000h
+ 07D1    **                  call    B$ENRA
+ 07D6   0012            IF num% > 0 AND num% < 99 THEN
+ 07D6   0012                    DEF SEG = &HB800
+ 07D6   0012                    BLOAD "screen" + ToZeroStr$(CSNG(num%), 2) + ".
+                dat", 0
+ 07D6   0012                    DEF SEG
+ 07D6   0012            ELSE
+ 07D6    **        L00000:   mov     si,06h[bp]
+ 07D9    **                  cmp     word ptr [si],00h
+ 07DC    **                  jng     I00055
+ 07DE    **                  cmp     word ptr [si],63h
+ 07E1    **                  jnl     I00055
+ 07E3    **        L00000:   mov     ax,0B800h
+ 07E6    **                  push    ax
+ 07E7    **                  call    B$DSEG
+ 07EC    **        L00000:   mov     si,06h[bp]
+                                                                      PAGE  23
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 07EF    **                  int     3Bh
+ 07F1    **                  db      04h
+ 07F2    **                  int     35h
+ 07F4    **                  db      5Eh
+ 07F5    **                  db      0EAh
+ 07F6    **                  int     3Dh
+ 07F8    **                  int     35h
+ 07FA    **                  db      06h
+ 07FB    **                  dw      <00000040>
+ 07FD    **                  int     35h
+ 07FF    **                  db      5Eh
+ 0800    **                  db      0E6h
+ 0801    **                  int     3Dh
+ 0803    **                  lea     ax,0EAh[bp]
+ 0806    **                  push    ax
+ 0807    **                  lea     ax,0E6h[bp]
+ 080A    **                  push    ax
+ 080B    **                  call    TOZEROSTR$
+ 0810    **                  push    ax
+ 0811    **                  lea     ax,0E2h[bp]
+ 0814    **                  push    ax
+ 0815    **                  call    B$SASS
+ 081A    **                  mov     ax,offset <const>
+ 081D    **                  push    ax
+ 081E    **                  lea     ax,0E2h[bp]
+ 0821    **                  push    ax
+ 0822    **                  call    B$SCAT
+ 0827    **                  push    ax
+ 0828    **                  mov     ax,offset <const>
+ 082B    **                  push    ax
+ 082C    **                  call    B$SCAT
+ 0831    **                  push    ax
+ 0832    **                  xor     ax,ax
+ 0834    **                  push    ax
+ 0835    **                  mov     ax,0001h
+ 0838    **                  push    ax
+ 0839    **                  call    B$BLOD
+ 083E    **        L00000:   call    B$DSG0
+ 0843    **        L00000:   jmp     I00056
+ 0846   0012                    ERROR 201
+ 0846    **        I00055:
+ 0846    **        L00000:   mov     ax,00C9h
+ 0849    **                  push    ax
+ 084A    **                  call    B$SERR
+ 084F   0012            END IF
+ 084F    **        L00000:
+ 084F   0012    END SUB
+ 084F    **        I00056:
+ 084F    **        L00000:
+ 084F    **        I00054:   call    B$EXSA
+ 0854    **                  ret     0002h
+ 0857   0012    
+ 0857   0012    FUNCTION Max% (a1%, a2%)
+ 0857    **        I00053:
+                                                                      PAGE  24
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0857    **        L00000:   jmp     I00057
+ 085A    **        MAX%:     mov     cx,0000h
+ 085D    **                  mov     bx,0000h
+ 0860    **                  call    B$ENRA
+ 0865   0012            IF a1% > a2% THEN Max = a1% ELSE Max = a2%
+ 0865    **        L00000:   mov     si,08h[bp]
+ 0868    **                  mov     ax,[si]
+ 086A    **                  mov     di,06h[bp]
+ 086D    **                  cmp     ax,[di]
+ 086F    **                  jng     I00059
+ 0871    **        L00000:   mov     si,08h[bp]
+ 0874    **                  mov     ax,[si]
+ 0876    **                  mov     0ECh[bp],ax
+ 0879    **        L00000:   jmp     I00060
+ 087C    **        I00059:
+ 087C    **        L00000:   mov     si,06h[bp]
+ 087F    **                  mov     ax,[si]
+ 0881    **                  mov     0ECh[bp],ax
+ 0884   0012    END FUNCTION
+ 0884    **        I00060:
+ 0884    **        L00000:
+ 0884    **        I00058:   mov     ax,0ECh[bp]
+ 0887    **                  call    B$EXSA
+ 088C    **                  ret     0004h
+ 088F   0012    
+ 088F   0012    FUNCTION Min% (a1%, a2%)
+ 088F    **        I00057:
+ 088F    **        L00000:   jmp     I00061
+ 0892    **        MIN%:     mov     cx,0000h
+ 0895    **                  mov     bx,0000h
+ 0898    **                  call    B$ENRA
+ 089D   0012            IF a1% < a2% THEN Min = a1% ELSE Min = a2%
+ 089D    **        L00000:   mov     si,08h[bp]
+ 08A0    **                  mov     ax,[si]
+ 08A2    **                  mov     di,06h[bp]
+ 08A5    **                  cmp     ax,[di]
+ 08A7    **                  jnl     I00063
+ 08A9    **        L00000:   mov     si,08h[bp]
+ 08AC    **                  mov     ax,[si]
+ 08AE    **                  mov     0ECh[bp],ax
+ 08B1    **        L00000:   jmp     I00064
+ 08B4    **        I00063:
+ 08B4    **        L00000:   mov     si,06h[bp]
+ 08B7    **                  mov     ax,[si]
+ 08B9    **                  mov     0ECh[bp],ax
+ 08BC   0012    END FUNCTION
+ 08BC    **        I00064:
+ 08BC    **        L00000:
+ 08BC    **        I00062:   mov     ax,0ECh[bp]
+ 08BF    **                  call    B$EXSA
+ 08C4    **                  ret     0004h
+ 08C7   0012    
+ 08C7   0012    SUB MouseCallDriver (m0, m1, m2, m3) STATIC
+ 08C7    **        I00061:
+                                                                      PAGE  25
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 08C7    **        L00000:   jmp     I00065
+ 08CA    **        MOUSECALLDRIVER:
+ 08CA    **                  mov     cx,0000h
+ 08CD    **                  mov     bx,0000h
+ 08D0    **                  call    B$ENSA
+ 08D5   0012    
+ 08D5   0012            DIM regs AS RegType
+ 08D5   0022    
+ 08D5   0022            IF MouseChecked = FALSE THEN
+ 08D5   0022            DEF SEG = 0
+ 08D5   0022    
+ 08D5   0022            MouseSegment& = 256& * PEEK(207) + PEEK(206)
+ 08D5   0022            MouseOffset& = 256& * PEEK(205) + PEEK(204)
+ 08D5   0022    
+ 08D5   0022            DEF SEG = MouseSegment&
+ 08D5   0022    
+ 08D5   0022            IF (MouseSegment& = 0 AND MouseOffset& = 0) OR PEEK(Mou
+                seOffset&) = 207 THEN
+ 08D5   0022                    MousePresent = FALSE
+ 08D5   0022                    MouseChecked = TRUE
+ 08D5   0022                    DEF SEG
+ 08D5   0022            END IF
+ 08D5    **        L00000:
+ 08D5    **        L00000:   int     35h
+ 08D7    **                  db      06h
+ 08D8    **                  dw      <00000000>
+ 08DA    **                  int     35h
+ 08DC    **                  db      06h
+ 08DD    **                  dw      MOUSECHECKED!
+ 08DF    **                  int     3Dh
+ 08E1    **                  call    B$FCMP
+ 08E6    **                  je      $+03h
+ 08E8    **                  jmp     I00067
+ 08EB    **        L00000:   xor     ax,ax
+ 08ED    **                  push    ax
+ 08EE    **                  call    B$DSEG
+ 08F3    **        L00000:   mov     ax,0100h
+ 08F6    **                  cwd     
+ 08F7    **                  push    dx
+ 08F8    **                  push    ax
+ 08F9    **                  mov     bx,00CFh
+ 08FC    **                  mov     es,b$seg%
+ 0900    **                  es:     
+ 0901    **                  mov     bl,[bx]
+ 0903    **                  xor     bh,bh
+ 0905    **                  mov     ax,bx
+ 0907    **                  cwd     
+ 0908    **                  push    dx
+ 0909    **                  push    ax
+ 090A    **                  call    B$MUI4
+ 090F    **                  mov     bx,00CEh
+ 0912    **                  mov     es,b$seg%
+ 0916    **                  es:     
+ 0917    **                  mov     bl,[bx]
+                                                                      PAGE  26
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0919    **                  xor     bh,bh
+ 091B    **                  mov     0ECh[bp],dx
+ 091E    **                  mov     0EAh[bp],ax
+ 0921    **                  mov     ax,bx
+ 0923    **                  cwd     
+ 0924    **                  add     ax,0EAh[bp]
+ 0927    **                  adc     dx,0ECh[bp]
+ 092A    **                  mov     MOUSESEGMENT&,ax
+ 092D    **                  mov     MOUSESEGMENT&+0002h,dx
+ 0931    **        L00000:   mov     ax,0100h
+ 0934    **                  cwd     
+ 0935    **                  push    dx
+ 0936    **                  push    ax
+ 0937    **                  mov     bx,00CDh
+ 093A    **                  mov     es,b$seg%
+ 093E    **                  es:     
+ 093F    **                  mov     bl,[bx]
+ 0941    **                  xor     bh,bh
+ 0943    **                  mov     ax,bx
+ 0945    **                  cwd     
+ 0946    **                  push    dx
+ 0947    **                  push    ax
+ 0948    **                  call    B$MUI4
+ 094D    **                  mov     bx,00CCh
+ 0950    **                  mov     es,b$seg%
+ 0954    **                  es:     
+ 0955    **                  mov     bl,[bx]
+ 0957    **                  xor     bh,bh
+ 0959    **                  mov     0E8h[bp],dx
+ 095C    **                  mov     0E6h[bp],ax
+ 095F    **                  mov     ax,bx
+ 0961    **                  cwd     
+ 0962    **                  add     ax,0E6h[bp]
+ 0965    **                  adc     dx,0E8h[bp]
+ 0968    **                  mov     MOUSEOFFSET&,ax
+ 096B    **                  mov     MOUSEOFFSET&+0002h,dx
+ 096F    **        L00000:   mov     ax,MOUSESEGMENT&
+ 0972    **                  push    ax
+ 0973    **                  call    B$DSEG
+ 0978    **        L00000:   push    MOUSESEGMENT&+0002h
+ 097C    **                  push    MOUSESEGMENT&
+ 0980    **                  xor     ax,ax
+ 0982    **                  cwd     
+ 0983    **                  push    dx
+ 0984    **                  push    ax
+ 0985    **                  call    B$CPI4
+ 098A    **                  jne     I00070
+ 098C    **                  push    MOUSEOFFSET&+0002h
+ 0990    **                  push    MOUSEOFFSET&
+ 0994    **                  push    dx
+ 0995    **                  push    ax
+ 0996    **                  call    B$CPI4
+ 099B    **                  je      I00069
+ 099D    **        I00070:   mov     ax,MOUSEOFFSET&
+                                                                      PAGE  27
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 09A0    **                  mov     bx,ax
+ 09A2    **                  mov     es,b$seg%
+ 09A6    **                  es:     
+ 09A7    **                  mov     bl,[bx]
+ 09A9    **                  xor     bh,bh
+ 09AB    **                  cmp     bx,00CFh
+ 09AF    **                  jne     I00068
+ 09B1    **        I00069:
+ 09B1    **        L00000:   mov     MOUSEPRESENT%,0000h
+ 09B7    **        L00000:   mov     MOUSECHECKED!,0000h
+ 09BD    **                  mov     MOUSECHECKED!+0002h,0BF80h
+ 09C3    **        L00000:   call    B$DSG0
+ 09C8    **        L00000:
+ 09C8   002E            END IF
+ 09C8    **        I00068:
+ 09C8    **        L00000:
+ 09C8   002E    
+ 09C8   002E            IF MousePresent = FALSE AND MouseChecked = TRUE THEN
+ 09C8   002E            'EXIT SUB
+ 09C8   002E            END IF
+ 09C8    **        I00067:
+ 09C8    **        L00000:   cmp     word ptr MOUSEPRESENT%,00h
+ 09CD    **                  jne     I00071
+ 09CF    **                  int     35h
+ 09D1    **                  db      06h
+ 09D2    **                  dw      <000080BF>
+ 09D4    **                  int     35h
+ 09D6    **                  db      06h
+ 09D7    **                  dw      MOUSECHECKED!
+ 09D9    **                  int     3Dh
+ 09DB    **                  call    B$FCMP
+ 09E0    **        L00000:
+ 09E0   002E    
+ 09E0   002E            ' =====================================================
+                ==================
+ 09E0   002E            ' Calls interrupt 51 to invoke mouse functions in the M
+                S Mouse Driver.
+ 09E0   002E            ' =====================================================
+                ==================
+ 09E0   002E    
+ 09E0   002E            regs.ax = m0
+ 09E0   002E            regs.bx = m1
+ 09E0   002E            regs.cx = m2
+ 09E0   002E            regs.dx = m3
+ 09E0   002E    
+ 09E0   002E            'Interrupt 51, regs, regs
+ 09E0   002E    
+ 09E0   002E            m0 = regs.ax
+ 09E0   002E            m1 = regs.bx
+ 09E0   002E            m2 = regs.cx
+ 09E0   002E            m3 = regs.dx
+ 09E0   002E    
+ 09E0   002E            IF MouseChecked THEN EXIT SUB
+ 09E0    **        I00071:
+                                                                      PAGE  28
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 09E0    **        L00000:   mov     si,0Ch[bp]
+ 09E3    **                  int     35h
+ 09E5    **                  db      04h
+ 09E6    **                  int     3Bh
+ 09E8    **                  db      1Eh
+ 09E9    **                  dw      REGS
+ 09EB    **                  int     3Dh
+ 09ED    **        L00000:   mov     si,0Ah[bp]
+ 09F0    **                  int     35h
+ 09F2    **                  db      04h
+ 09F3    **                  int     3Bh
+ 09F5    **                  db      1Eh
+ 09F6    **                  dw      REGS+0002h
+ 09F8    **                  int     3Dh
+ 09FA    **        L00000:   mov     si,08h[bp]
+ 09FD    **                  int     35h
+ 09FF    **                  db      04h
+ 0A00    **                  int     3Bh
+ 0A02    **                  db      1Eh
+ 0A03    **                  dw      REGS+0004h
+ 0A05    **                  int     3Dh
+ 0A07    **        L00000:   mov     si,06h[bp]
+ 0A0A    **                  int     35h
+ 0A0C    **                  db      04h
+ 0A0D    **                  int     3Bh
+ 0A0F    **                  db      1Eh
+ 0A10    **                  dw      REGS+0006h
+ 0A12    **                  int     3Dh
+ 0A14    **        L00000:   int     3Bh
+ 0A16    **                  db      06h
+ 0A17    **                  dw      REGS
+ 0A19    **                  mov     si,0Ch[bp]
+ 0A1C    **                  int     35h
+ 0A1E    **                  db      1Ch
+ 0A1F    **                  int     3Dh
+ 0A21    **        L00000:   int     3Bh
+ 0A23    **                  db      06h
+ 0A24    **                  dw      REGS+0002h
+ 0A26    **                  mov     si,0Ah[bp]
+ 0A29    **                  int     35h
+ 0A2B    **                  db      1Ch
+ 0A2C    **                  int     3Dh
+ 0A2E    **        L00000:   int     3Bh
+ 0A30    **                  db      06h
+ 0A31    **                  dw      REGS+0004h
+ 0A33    **                  mov     si,08h[bp]
+ 0A36    **                  int     35h
+ 0A38    **                  db      1Ch
+ 0A39    **                  int     3Dh
+ 0A3B    **        L00000:   int     3Bh
+ 0A3D    **                  db      06h
+ 0A3E    **                  dw      REGS+0006h
+ 0A40    **                  mov     si,06h[bp]
+ 0A43    **                  int     35h
+                                                                      PAGE  29
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0A45    **                  db      1Ch
+ 0A46    **                  int     3Dh
+ 0A48    **        L00000:   int     35h
+ 0A4A    **                  db      06h
+ 0A4B    **                  dw      <00000000>
+ 0A4D    **                  int     35h
+ 0A4F    **                  db      06h
+ 0A50    **                  dw      MOUSECHECKED!
+ 0A52    **                  int     3Dh
+ 0A54    **                  call    B$FCMP
+ 0A59    **                  je      I00072
+ 0A5B    **        L00000:   call    B$EXTS
+ 0A60    **                  jmp     I00066
+ 0A63   002E    
+ 0A63   002E            ' =====================================================
+                ==================
+ 0A63   002E            ' Check for successful mouse initialization
+ 0A63   002E            ' =====================================================
+                ==================
+ 0A63   002E    
+ 0A63   002E            IF m0 AND NOT MouseChecked THEN
+ 0A63   002E            MousePresent = TRUE
+ 0A63   002E            DEF SEG
+ 0A63   002E            END IF
+ 0A63    **        I00072:
+ 0A63    **        L00000:   mov     si,0Ch[bp]
+ 0A66    **                  int     35h
+ 0A68    **                  db      04h
+ 0A69    **                  call    B$FIST
+ 0A6E    **                  int     35h
+ 0A70    **                  db      06h
+ 0A71    **                  dw      MOUSECHECKED!
+ 0A73    **                  mov     0E4h[bp],dx
+ 0A76    **                  mov     0E2h[bp],ax
+ 0A79    **                  call    B$FIST
+ 0A7E    **                  not     ax
+ 0A80    **                  not     dx
+ 0A82    **                  and     ax,0E2h[bp]
+ 0A85    **                  and     dx,0E4h[bp]
+ 0A88    **                  or      ax,dx
+ 0A8A    **                  je      I00073
+ 0A8C    **        L00000:   mov     MOUSEPRESENT%,0FFFFh
+ 0A92    **        L00000:   call    B$DSG0
+ 0A97    **        L00000:
+ 0A97   002E    
+ 0A97   002E            MouseChecked = TRUE
+ 0A97   002E    
+ 0A97   002E    END SUB
+ 0A97    **        I00073:
+ 0A97    **        L00000:   mov     MOUSECHECKED!,0000h
+ 0A9D    **                  mov     MOUSECHECKED!+0002h,0BF80h
+ 0AA3    **        L00000:
+ 0AA3    **        I00066:   call    B$EXSA
+ 0AA8    **                  ret     0008h
+                                                                      PAGE  30
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0AAB   002E    
+ 0AAB   002E    SUB MouseHide
+ 0AAB    **        I00065:
+ 0AAB    **        L00000:   jmp     I00074
+ 0AAE    **        MOUSEHIDE:
+ 0AAE    **                  mov     cx,0000h
+ 0AB1    **                  mov     bx,0000h
+ 0AB4    **                  call    B$ENRA
+ 0AB9   002E       MouseCallDriver 2, 0, 0, 0
+ 0AB9    **        L00000:   int     35h
+ 0ABB    **                  db      06h
+ 0ABC    **                  dw      <00000040>
+ 0ABE    **                  int     35h
+ 0AC0    **                  db      5Eh
+ 0AC1    **                  db      0EAh
+ 0AC2    **                  int     3Dh
+ 0AC4    **                  int     35h
+ 0AC6    **                  db      06h
+ 0AC7    **                  dw      <00000000>
+ 0AC9    **                  int     35h
+ 0ACB    **                  db      5Eh
+ 0ACC    **                  db      0E6h
+ 0ACD    **                  int     3Dh
+ 0ACF    **                  int     35h
+ 0AD1    **                  db      06h
+ 0AD2    **                  dw      <00000000>
+ 0AD4    **                  int     35h
+ 0AD6    **                  db      5Eh
+ 0AD7    **                  db      0E2h
+ 0AD8    **                  int     3Dh
+ 0ADA    **                  int     35h
+ 0ADC    **                  db      06h
+ 0ADD    **                  dw      <00000000>
+ 0ADF    **                  int     35h
+ 0AE1    **                  db      5Eh
+ 0AE2    **                  db      0DEh
+ 0AE3    **                  int     3Dh
+ 0AE5    **                  lea     ax,0EAh[bp]
+ 0AE8    **                  push    ax
+ 0AE9    **                  lea     ax,0E6h[bp]
+ 0AEC    **                  push    ax
+ 0AED    **                  lea     ax,0E2h[bp]
+ 0AF0    **                  push    ax
+ 0AF1    **                  lea     ax,0DEh[bp]
+ 0AF4    **                  push    ax
+ 0AF5    **                  call    MOUSECALLDRIVER
+ 0AFA   002E    END SUB
+ 0AFA    **        L00000:
+ 0AFA    **        I00075:   call    B$EXSA
+ 0AFF    **                  ret     0000h
+ 0B02   002E    
+ 0B02   002E    SUB MouseInit
+ 0B02    **        I00074:
+ 0B02    **        L00000:   jmp     I00076
+                                                                      PAGE  31
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0B05    **        MOUSEINIT:
+ 0B05    **                  mov     cx,0000h
+ 0B08    **                  mov     bx,0000h
+ 0B0B    **                  call    B$ENRA
+ 0B10   002E       MouseCallDriver 0, 0, 0, 0
+ 0B10    **        L00000:   int     35h
+ 0B12    **                  db      06h
+ 0B13    **                  dw      <00000000>
+ 0B15    **                  int     35h
+ 0B17    **                  db      5Eh
+ 0B18    **                  db      0EAh
+ 0B19    **                  int     3Dh
+ 0B1B    **                  int     35h
+ 0B1D    **                  db      06h
+ 0B1E    **                  dw      <00000000>
+ 0B20    **                  int     35h
+ 0B22    **                  db      5Eh
+ 0B23    **                  db      0E6h
+ 0B24    **                  int     3Dh
+ 0B26    **                  int     35h
+ 0B28    **                  db      06h
+ 0B29    **                  dw      <00000000>
+ 0B2B    **                  int     35h
+ 0B2D    **                  db      5Eh
+ 0B2E    **                  db      0E2h
+ 0B2F    **                  int     3Dh
+ 0B31    **                  int     35h
+ 0B33    **                  db      06h
+ 0B34    **                  dw      <00000000>
+ 0B36    **                  int     35h
+ 0B38    **                  db      5Eh
+ 0B39    **                  db      0DEh
+ 0B3A    **                  int     3Dh
+ 0B3C    **                  lea     ax,0EAh[bp]
+ 0B3F    **                  push    ax
+ 0B40    **                  lea     ax,0E6h[bp]
+ 0B43    **                  push    ax
+ 0B44    **                  lea     ax,0E2h[bp]
+ 0B47    **                  push    ax
+ 0B48    **                  lea     ax,0DEh[bp]
+ 0B4B    **                  push    ax
+ 0B4C    **                  call    MOUSECALLDRIVER
+ 0B51   002E    END SUB
+ 0B51    **        L00000:
+ 0B51    **        I00077:   call    B$EXSA
+ 0B56    **                  ret     0000h
+ 0B59   002E    
+ 0B59   002E    SUB MousePoll (row, col, lButton, rButton) STATIC
+ 0B59    **        I00076:
+ 0B59    **        L00000:   jmp     I00078
+ 0B5C    **        MOUSEPOLL:
+ 0B5C    **                  mov     cx,0000h
+ 0B5F    **                  mov     bx,0000h
+ 0B62    **                  call    B$ENSA
+                                                                      PAGE  32
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0B67   002E            ' =====================================================
+                ==================
+ 0B67   002E            ' Polls mouse driver, then sets parms correctly
+ 0B67   002E            ' =====================================================
+                ==================
+ 0B67   002E    
+ 0B67   002E            MouseCallDriver 3, button, col, row
+ 0B67    **        L00000:   int     35h
+ 0B69    **                  db      06h
+ 0B6A    **                  dw      <00004040>
+ 0B6C    **                  int     35h
+ 0B6E    **                  db      1Eh
+ 0B6F    **                  dw      t002E!
+ 0B71    **                  int     3Dh
+ 0B73    **                  mov     ax,offset t002E!
+ 0B76    **                  push    ax
+ 0B77    **                  mov     ax,offset BUTTON!
+ 0B7A    **                  push    ax
+ 0B7B    **                  push    0Ah[bp]
+ 0B7E    **                  push    0Ch[bp]
+ 0B81    **                  call    MOUSECALLDRIVER
+ 0B86   0036            row = row / 8 + 1
+ 0B86   0036            col = col / 8 + 1
+ 0B86   0036    
+ 0B86   0036            IF button AND 1 THEN
+ 0B86   0036                    lButton = TRUE
+ 0B86   0036            ELSE
+ 0B86    **        L00000:   mov     si,0Ch[bp]
+ 0B89    **                  int     35h
+ 0B8B    **                  db      04h
+ 0B8C    **                  int     34h
+ 0B8E    **                  db      36h
+ 0B8F    **                  dw      <00000041>
+ 0B91    **                  int     34h
+ 0B93    **                  db      06h
+ 0B94    **                  dw      <0000803F>
+ 0B96    **                  int     35h
+ 0B98    **                  db      1Ch
+ 0B99    **                  int     3Dh
+ 0B9B    **        L00000:   mov     si,0Ah[bp]
+ 0B9E    **                  int     35h
+ 0BA0    **                  db      04h
+ 0BA1    **                  int     34h
+ 0BA3    **                  db      36h
+ 0BA4    **                  dw      <00000041>
+ 0BA6    **                  int     34h
+ 0BA8    **                  db      06h
+ 0BA9    **                  dw      <0000803F>
+ 0BAB    **                  int     35h
+ 0BAD    **                  db      1Ch
+ 0BAE    **                  int     3Dh
+ 0BB0    **        L00000:   int     35h
+ 0BB2    **                  db      06h
+ 0BB3    **                  dw      BUTTON!
+                                                                      PAGE  33
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0BB5    **                  call    B$FIST
+ 0BBA    **                  and     ax,0001h
+ 0BBD    **                  and     dx,00h
+ 0BC0    **                  or      ax,dx
+ 0BC2    **                  je      I00080
+ 0BC4    **        L00000:   mov     si,08h[bp]
+ 0BC7    **                  mov     [si],0000h
+ 0BCB    **                  mov     02h[si],0BF80h
+ 0BD0    **        L00000:   jmp     I00081
+ 0BD3   0036                    lButton = FALSE
+ 0BD3   0036            END IF
+ 0BD3    **        I00080:
+ 0BD3    **        L00000:   mov     si,08h[bp]
+ 0BD6    **                  mov     [si],0000h
+ 0BDA    **                  mov     02h[si],0000h
+ 0BDF    **        L00000:
+ 0BDF   0036    
+ 0BDF   0036            IF button AND 2 THEN
+ 0BDF   0036            rButton = TRUE
+ 0BDF   0036            ELSE
+ 0BDF    **        I00081:
+ 0BDF    **        L00000:   int     35h
+ 0BE1    **                  db      06h
+ 0BE2    **                  dw      BUTTON!
+ 0BE4    **                  call    B$FIST
+ 0BE9    **                  and     ax,0002h
+ 0BEC    **                  and     dx,00h
+ 0BEF    **                  or      ax,dx
+ 0BF1    **                  je      I00082
+ 0BF3    **        L00000:   mov     si,06h[bp]
+ 0BF6    **                  mov     [si],0000h
+ 0BFA    **                  mov     02h[si],0BF80h
+ 0BFF    **        L00000:   jmp     I00083
+ 0C02   0036            rButton = FALSE
+ 0C02   0036            END IF
+ 0C02    **        I00082:
+ 0C02    **        L00000:   mov     si,06h[bp]
+ 0C05    **                  mov     [si],0000h
+ 0C09    **                  mov     02h[si],0000h
+ 0C0E    **        L00000:
+ 0C0E   0036     
+ 0C0E   0036    END SUB
+ 0C0E    **        I00083:
+ 0C0E    **        L00000:
+ 0C0E    **        I00079:   call    B$EXSA
+ 0C13    **                  ret     0008h
+ 0C16   0036    
+ 0C16   0036    SUB MouseSetBorder (row1, col1, row2, col2) STATIC
+ 0C16    **        I00078:
+ 0C16    **        L00000:   jmp     I00084
+ 0C19    **        MOUSESETBORDER:
+ 0C19    **                  mov     cx,0000h
+ 0C1C    **                  mov     bx,0000h
+ 0C1F    **                  call    B$ENSA
+                                                                      PAGE  34
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0C24   0036    
+ 0C24   0036            ' =====================================================
+                ==================
+ 0C24   0036            ' Sets max and min bounds on mouse movement both vertic
+                ally, and
+ 0C24   0036            ' horizontally
+ 0C24   0036            ' =====================================================
+                ==================
+ 0C24   0036    
+ 0C24   0036       MouseCallDriver 7, 0, (col1 - 1) * 8, (col2 - 1) * 8
+ 0C24    **        L00000:   int     35h
+ 0C26    **                  db      06h
+ 0C27    **                  dw      <0000E040>
+ 0C29    **                  int     35h
+ 0C2B    **                  db      1Eh
+ 0C2C    **                  dw      t0036!
+ 0C2E    **                  int     3Dh
+ 0C30    **                  int     35h
+ 0C32    **                  db      06h
+ 0C33    **                  dw      <00000000>
+ 0C35    **                  int     35h
+ 0C37    **                  db      1Eh
+ 0C38    **                  dw      t003A!
+ 0C3A    **                  int     3Dh
+ 0C3C    **                  mov     si,0Ah[bp]
+ 0C3F    **                  int     35h
+ 0C41    **                  db      04h
+ 0C42    **                  int     34h
+ 0C44    **                  db      26h
+ 0C45    **                  dw      <0000803F>
+ 0C47    **                  int     34h
+ 0C49    **                  db      0Eh
+ 0C4A    **                  dw      <00000041>
+ 0C4C    **                  int     35h
+ 0C4E    **                  db      1Eh
+ 0C4F    **                  dw      t003E!
+ 0C51    **                  int     3Dh
+ 0C53    **                  mov     si,06h[bp]
+ 0C56    **                  int     35h
+ 0C58    **                  db      04h
+ 0C59    **                  int     34h
+ 0C5B    **                  db      26h
+ 0C5C    **                  dw      <0000803F>
+ 0C5E    **                  int     34h
+ 0C60    **                  db      0Eh
+ 0C61    **                  dw      <00000041>
+ 0C63    **                  int     35h
+ 0C65    **                  db      1Eh
+ 0C66    **                  dw      t0042!
+ 0C68    **                  int     3Dh
+ 0C6A    **                  mov     ax,offset t0036!
+ 0C6D    **                  push    ax
+ 0C6E    **                  mov     ax,offset t003A!
+ 0C71    **                  push    ax
+                                                                      PAGE  35
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0C72    **                  mov     ax,offset t003E!
+ 0C75    **                  push    ax
+ 0C76    **                  mov     ax,offset t0042!
+ 0C79    **                  push    ax
+ 0C7A    **                  call    MOUSECALLDRIVER
+ 0C7F   0046       MouseCallDriver 8, 0, (row1 - 1) * 8, (row2 - 1) * 8
+ 0C7F    **        L00000:   int     35h
+ 0C81    **                  db      06h
+ 0C82    **                  dw      <00000041>
+ 0C84    **                  int     35h
+ 0C86    **                  db      1Eh
+ 0C87    **                  dw      t0046!
+ 0C89    **                  int     3Dh
+ 0C8B    **                  int     35h
+ 0C8D    **                  db      06h
+ 0C8E    **                  dw      <00000000>
+ 0C90    **                  int     35h
+ 0C92    **                  db      1Eh
+ 0C93    **                  dw      t004A!
+ 0C95    **                  int     3Dh
+ 0C97    **                  mov     si,0Ch[bp]
+ 0C9A    **                  int     35h
+ 0C9C    **                  db      04h
+ 0C9D    **                  int     34h
+ 0C9F    **                  db      26h
+ 0CA0    **                  dw      <0000803F>
+ 0CA2    **                  int     34h
+ 0CA4    **                  db      0Eh
+ 0CA5    **                  dw      <00000041>
+ 0CA7    **                  int     35h
+ 0CA9    **                  db      1Eh
+ 0CAA    **                  dw      t004E!
+ 0CAC    **                  int     3Dh
+ 0CAE    **                  mov     si,08h[bp]
+ 0CB1    **                  int     35h
+ 0CB3    **                  db      04h
+ 0CB4    **                  int     34h
+ 0CB6    **                  db      26h
+ 0CB7    **                  dw      <0000803F>
+ 0CB9    **                  int     34h
+ 0CBB    **                  db      0Eh
+ 0CBC    **                  dw      <00000041>
+ 0CBE    **                  int     35h
+ 0CC0    **                  db      1Eh
+ 0CC1    **                  dw      t0052!
+ 0CC3    **                  int     3Dh
+ 0CC5    **                  mov     ax,offset t0046!
+ 0CC8    **                  push    ax
+ 0CC9    **                  mov     ax,offset t004A!
+ 0CCC    **                  push    ax
+ 0CCD    **                  mov     ax,offset t004E!
+ 0CD0    **                  push    ax
+ 0CD1    **                  mov     ax,offset t0052!
+ 0CD4    **                  push    ax
+                                                                      PAGE  36
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0CD5    **                  call    MOUSECALLDRIVER
+ 0CDA   0056    END SUB'
+ 0CDA    **        L00000:
+ 0CDA    **        I00085:   call    B$EXSA
+ 0CDF    **                  ret     0008h
+ 0CE2   0056    
+ 0CE2   0056    SUB MouseShow
+ 0CE2    **        I00084:
+ 0CE2    **        L00000:   jmp     I00086
+ 0CE5    **        MOUSESHOW:
+ 0CE5    **                  mov     cx,0000h
+ 0CE8    **                  mov     bx,0000h
+ 0CEB    **                  call    B$ENRA
+ 0CF0   0056       MouseCallDriver 1, 0, 0, 0
+ 0CF0    **        L00000:   int     35h
+ 0CF2    **                  db      06h
+ 0CF3    **                  dw      <0000803F>
+ 0CF5    **                  int     35h
+ 0CF7    **                  db      5Eh
+ 0CF8    **                  db      0EAh
+ 0CF9    **                  int     3Dh
+ 0CFB    **                  int     35h
+ 0CFD    **                  db      06h
+ 0CFE    **                  dw      <00000000>
+ 0D00    **                  int     35h
+ 0D02    **                  db      5Eh
+ 0D03    **                  db      0E6h
+ 0D04    **                  int     3Dh
+ 0D06    **                  int     35h
+ 0D08    **                  db      06h
+ 0D09    **                  dw      <00000000>
+ 0D0B    **                  int     35h
+ 0D0D    **                  db      5Eh
+ 0D0E    **                  db      0E2h
+ 0D0F    **                  int     3Dh
+ 0D11    **                  int     35h
+ 0D13    **                  db      06h
+ 0D14    **                  dw      <00000000>
+ 0D16    **                  int     35h
+ 0D18    **                  db      5Eh
+ 0D19    **                  db      0DEh
+ 0D1A    **                  int     3Dh
+ 0D1C    **                  lea     ax,0EAh[bp]
+ 0D1F    **                  push    ax
+ 0D20    **                  lea     ax,0E6h[bp]
+ 0D23    **                  push    ax
+ 0D24    **                  lea     ax,0E2h[bp]
+ 0D27    **                  push    ax
+ 0D28    **                  lea     ax,0DEh[bp]
+ 0D2B    **                  push    ax
+ 0D2C    **                  call    MOUSECALLDRIVER
+ 0D31   0056    END SUB
+ 0D31    **        L00000:
+ 0D31    **        I00087:   call    B$EXSA
+                                                                      PAGE  37
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0D36    **                  ret     0000h
+ 0D39   0056    
+ 0D39   0056    SUB PressAnyKey
+ 0D39    **        I00086:
+ 0D39    **        L00000:   jmp     I00088
+ 0D3C    **        PRESSANYKEY:
+ 0D3C    **                  mov     cx,0000h
+ 0D3F    **                  mov     bx,0000h
+ 0D42    **                  call    B$ENRA
+ 0D47   0056            DO
+ 0D47    **        L00000:   nop     
+ 0D48   0056            LOOP WHILE INKEY$ = ""
+ 0D48   0056    END SUB
+ 0D48    **        I00090:
+ 0D48    **        L00000:   call    B$INKY
+ 0D4D    **                  push    ax
+ 0D4E    **                  mov     ax,offset <const>
+ 0D51    **                  push    ax
+ 0D52    **                  call    B$SCMP
+ 0D57    **                  je      I00090
+ 0D59    **        L00000:
+ 0D59    **        I00089:   call    B$EXSA
+ 0D5E    **                  ret     0000h
+ 0D61   0056    
+ 0D61   0056    SUB PressEsc
+ 0D61    **        I00088:
+ 0D61    **        L00000:   jmp     I00091
+ 0D64    **        PRESSESC: mov     cx,0000h
+ 0D67    **                  mov     bx,0000h
+ 0D6A    **                  call    B$ENRA
+ 0D6F   0056            DO
+ 0D6F    **        L00000:   nop     
+ 0D70   0056            LOOP WHILE INKEY$ <> CHR$(27)
+ 0D70   0056    END SUB
+ 0D70    **        I00093:
+ 0D70    **        L00000:   call    B$INKY
+ 0D75    **                  push    ax
+ 0D76    **                  mov     ax,001Bh
+ 0D79    **                  push    ax
+ 0D7A    **                  call    B$FCHR
+ 0D7F    **                  push    ax
+ 0D80    **                  call    B$SCMP
+ 0D85    **                  jne     I00093
+ 0D87    **        L00000:
+ 0D87    **        I00092:   call    B$EXSA
+ 0D8C    **                  ret     0000h
+ 0D8F   0056    
+ 0D8F   0056    SUB PrintStr (x%, y%, st$)
+ 0D8F    **        I00091:
+ 0D8F    **        L00000:   jmp     I00094
+ 0D92    **        PRINTSTR: mov     cx,0000h
+ 0D95    **                  mov     bx,0000h
+ 0D98    **                  call    B$ENRA
+ 0D9D   0056            SetPos x%, y%
+                                                                      PAGE  38
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0D9D    **        L00000:   push    0Ah[bp]
+ 0DA0    **                  push    08h[bp]
+ 0DA3    **                  call    SETPOS
+ 0DA8   0056            PRINT st$;
+ 0DA8   0056    END SUB
+ 0DA8    **        L00000:   push    06h[bp]
+ 0DAB    **                  call    B$PSSD
+ 0DB0    **        L00000:
+ 0DB0    **        I00095:   call    B$EXSA
+ 0DB5    **                  ret     0006h
+ 0DB8   0056    
+ 0DB8   0056    SUB RestoreStr (s$, x%, y%, maxLen%, oldPos%)
+ 0DB8    **        I00094:
+ 0DB8    **        L00000:   jmp     I00096
+ 0DBB    **        RESTORESTR:
+ 0DBB    **                  mov     cx,0000h
+ 0DBE    **                  mov     bx,0000h
+ 0DC1    **                  call    B$ENRA
+ 0DC6   0056            LOCATE y%, x%
+ 0DC6   0056            PRINT STRING$(maxLen%, " ");
+ 0DC6   0056            LOCATE y%, x%
+ 0DC6   0056            PRINT s$;
+ 0DC6   0056            LOCATE y%, oldPos%
+ 0DC6   0056    END SUB
+ 0DC6    **        L00000:   mov     ax,0001h
+ 0DC9    **                  push    ax
+ 0DCA    **                  mov     si,0Ah[bp]
+ 0DCD    **                  push    [si]
+ 0DCF    **                  push    ax
+ 0DD0    **                  mov     si,0Ch[bp]
+ 0DD3    **                  push    [si]
+ 0DD5    **                  mov     ax,0004h
+ 0DD8    **                  push    ax
+ 0DD9    **                  call    B$LOCT
+ 0DDE    **        L00000:   mov     si,08h[bp]
+ 0DE1    **                  push    [si]
+ 0DE3    **                  mov     ax,offset <const>
+ 0DE6    **                  push    ax
+ 0DE7    **                  call    B$STRS
+ 0DEC    **                  push    ax
+ 0DED    **                  call    B$PSSD
+ 0DF2    **        L00000:   mov     ax,0001h
+ 0DF5    **                  push    ax
+ 0DF6    **                  mov     si,0Ah[bp]
+ 0DF9    **                  push    [si]
+ 0DFB    **                  push    ax
+ 0DFC    **                  mov     si,0Ch[bp]
+ 0DFF    **                  push    [si]
+ 0E01    **                  mov     ax,0004h
+ 0E04    **                  push    ax
+ 0E05    **                  call    B$LOCT
+ 0E0A    **        L00000:   push    0Eh[bp]
+ 0E0D    **                  call    B$PSSD
+ 0E12    **        L00000:   mov     ax,0001h
+                                                                      PAGE  39
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0E15    **                  push    ax
+ 0E16    **                  mov     si,0Ah[bp]
+ 0E19    **                  push    [si]
+ 0E1B    **                  push    ax
+ 0E1C    **                  mov     si,06h[bp]
+ 0E1F    **                  push    [si]
+ 0E21    **                  mov     ax,0004h
+ 0E24    **                  push    ax
+ 0E25    **                  call    B$LOCT
+ 0E2A    **        L00000:
+ 0E2A    **        I00097:   call    B$EXSA
+ 0E2F    **                  ret     000Ah
+ 0E32   0056    
+ 0E32   0056    SUB SaveScreen (num%)
+ 0E32    **        I00096:
+ 0E32    **        L00000:   jmp     I00098
+ 0E35    **        SAVESCREEN:
+ 0E35    **                  mov     cx,0000h
+ 0E38    **                  mov     bx,0000h
+ 0E3B    **                  call    B$ENRA
+ 0E40   0056            IF num% > 0 AND num% < 99 THEN
+ 0E40   0056                    DEF SEG = &HB800
+ 0E40   0056                    BSAVE "screen" + ToZeroStr$(CSNG(num%), 2) + ".
+                dat", 0, 4000
+ 0E40   0056                    DEF SEG
+ 0E40   0056            ELSE
+ 0E40    **        L00000:   mov     si,06h[bp]
+ 0E43    **                  cmp     word ptr [si],00h
+ 0E46    **                  jng     I00100
+ 0E48    **                  cmp     word ptr [si],63h
+ 0E4B    **                  jnl     I00100
+ 0E4D    **        L00000:   mov     ax,0B800h
+ 0E50    **                  push    ax
+ 0E51    **                  call    B$DSEG
+ 0E56    **        L00000:   mov     si,06h[bp]
+ 0E59    **                  int     3Bh
+ 0E5B    **                  db      04h
+ 0E5C    **                  int     35h
+ 0E5E    **                  db      5Eh
+ 0E5F    **                  db      0EAh
+ 0E60    **                  int     3Dh
+ 0E62    **                  int     35h
+ 0E64    **                  db      06h
+ 0E65    **                  dw      <00000040>
+ 0E67    **                  int     35h
+ 0E69    **                  db      5Eh
+ 0E6A    **                  db      0E6h
+ 0E6B    **                  int     3Dh
+ 0E6D    **                  lea     ax,0EAh[bp]
+ 0E70    **                  push    ax
+ 0E71    **                  lea     ax,0E6h[bp]
+ 0E74    **                  push    ax
+ 0E75    **                  call    TOZEROSTR$
+ 0E7A    **                  push    ax
+                                                                      PAGE  40
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0E7B    **                  lea     ax,0E2h[bp]
+ 0E7E    **                  push    ax
+ 0E7F    **                  call    B$SASS
+ 0E84    **                  mov     ax,offset <const>
+ 0E87    **                  push    ax
+ 0E88    **                  lea     ax,0E2h[bp]
+ 0E8B    **                  push    ax
+ 0E8C    **                  call    B$SCAT
+ 0E91    **                  push    ax
+ 0E92    **                  mov     ax,offset <const>
+ 0E95    **                  push    ax
+ 0E96    **                  call    B$SCAT
+ 0E9B    **                  push    ax
+ 0E9C    **                  xor     ax,ax
+ 0E9E    **                  push    ax
+ 0E9F    **                  mov     ax,0FA0h
+ 0EA2    **                  push    ax
+ 0EA3    **                  call    B$BSAV
+ 0EA8    **        L00000:   call    B$DSG0
+ 0EAD    **        L00000:   jmp     I00101
+ 0EB0   0056                    ERROR 201
+ 0EB0    **        I00100:
+ 0EB0    **        L00000:   mov     ax,00C9h
+ 0EB3    **                  push    ax
+ 0EB4    **                  call    B$SERR
+ 0EB9   0056            END IF
+ 0EB9    **        L00000:
+ 0EB9   0056    END SUB
+ 0EB9    **        I00101:
+ 0EB9    **        L00000:
+ 0EB9    **        I00099:   call    B$EXSA
+ 0EBE    **                  ret     0002h
+ 0EC1   0056    
+ 0EC1   0056    FUNCTION SearchWord (a() AS STRING, word$)
+ 0EC1    **        I00098:
+ 0EC1    **        L00000:   jmp     I00102
+ 0EC4    **        SEARCHWORD!:
+ 0EC4    **                  mov     cx,0000h
+ 0EC7    **                  mov     bx,0000h
+ 0ECA    **                  call    B$ENRA
+ 0ECF   0056            SearchWord = -1
+ 0ECF   0056            FOR k = LBOUND(a) TO UBOUND(a)
+ 0ECF    **        L00000:   mov     si,06h[bp]
+ 0ED2    **                  mov     [si],0000h
+ 0ED6    **                  mov     02h[si],0BF80h
+ 0EDB    **        L00000:   push    0Ah[bp]
+ 0EDE    **                  mov     ax,0001h
+ 0EE1    **                  push    ax
+ 0EE2    **                  call    B$UBND
+ 0EE7    **                  call    B$FIL2
+ 0EEC    **                  int     35h
+ 0EEE    **                  db      5Eh
+ 0EEF    **                  db      0EAh
+ 0EF0    **                  int     3Dh
+                                                                      PAGE  41
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0EF2    **                  push    0Ah[bp]
+ 0EF5    **                  mov     ax,0001h
+ 0EF8    **                  push    ax
+ 0EF9    **                  call    B$LBND
+ 0EFE    **                  call    B$FIL2
+ 0F03    **                  jmp     I00104
+ 0F06   0056                    IF a(k) = word$ THEN
+ 0F06   0056                            SearchWord = k
+ 0F06   0056                            EXIT FOR
+ 0F06   0056                    END IF
+ 0F06    **        I00105:
+ 0F06    **        L00000:   int     35h
+ 0F08    **                  db      46h
+ 0F09    **                  db      0E6h
+ 0F0A    **                  call    B$FIS2
+ 0F0F    **                  sal     ax,1
+ 0F11    **                  sal     ax,1
+ 0F13    **                  mov     bx,ax
+ 0F15    **                  mov     si,0Ah[bp]
+ 0F18    **                  add     bx,0Ah[si]
+ 0F1B    **                  push    bx
+ 0F1C    **                  push    08h[bp]
+ 0F1F    **                  call    B$SCMP
+ 0F24    **                  jne     I00106
+ 0F26    **        L00000:   mov     ax,0E6h[bp]
+ 0F29    **                  mov     dx,0E8h[bp]
+ 0F2C    **                  mov     si,06h[bp]
+ 0F2F    **                  mov     [si],ax
+ 0F31    **                  mov     02h[si],dx
+ 0F34    **        L00000:   jmp     I00107
+ 0F37    **        L00000:
+ 0F37   0056            NEXT
+ 0F37    **        I00106:
+ 0F37    **        L00000:   int     35h
+ 0F39    **                  db      46h
+ 0F3A    **                  db      0E6h
+ 0F3B    **                  int     34h
+ 0F3D    **                  db      06h
+ 0F3E    **                  dw      <0000803F>
+ 0F40    **        I00104:   int     35h
+ 0F42    **                  db      5Eh
+ 0F43    **                  db      0E6h
+ 0F44    **                  int     3Dh
+ 0F46    **                  int     35h
+ 0F48    **                  db      46h
+ 0F49    **                  db      0EAh
+ 0F4A    **                  int     35h
+ 0F4C    **                  db      46h
+ 0F4D    **                  db      0E6h
+ 0F4E    **                  int     3Dh
+ 0F50    **                  call    B$FCMP
+ 0F55    **                  jna     I00105
+ 0F57   0056    END FUNCTION
+ 0F57    **        I00107:
+                                                                      PAGE  42
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0F57    **        L00000:
+ 0F57    **        I00103:   mov     ax,06h[bp]
+ 0F5A    **                  call    B$EXSA
+ 0F5F    **                  ret     0006h
+ 0F62   0056    
+ 0F62   0056    SUB SetBColor (bCol)
+ 0F62    **        I00102:
+ 0F62    **        L00000:   jmp     I00108
+ 0F65    **        SETBCOLOR:
+ 0F65    **                  mov     cx,0000h
+ 0F68    **                  mov     bx,0000h
+ 0F6B    **                  call    B$ENRA
+ 0F70   0056            COLOR fColor, bCol
+ 0F70   0056            bColor = bCol
+ 0F70   0056    END SUB
+ 0F70    **        L00000:   mov     ax,0001h
+ 0F73    **                  push    ax
+ 0F74    **                  push    FCOLOR%
+ 0F78    **                  push    ax
+ 0F79    **                  mov     si,06h[bp]
+ 0F7C    **                  int     35h
+ 0F7E    **                  db      04h
+ 0F7F    **                  call    B$FIS2
+ 0F84    **                  push    ax
+ 0F85    **                  mov     ax,0004h
+ 0F88    **                  push    ax
+ 0F89    **                  call    B$COLR
+ 0F8E    **        L00000:   mov     si,06h[bp]
+ 0F91    **                  int     35h
+ 0F93    **                  db      04h
+ 0F94    **                  int     3Bh
+ 0F96    **                  db      1Eh
+ 0F97    **                  dw      BCOLOR%
+ 0F99    **                  int     3Dh
+ 0F9B    **        L00000:
+ 0F9B    **        I00109:   call    B$EXSA
+ 0FA0    **                  ret     0002h
+ 0FA3   0056    
+ 0FA3   0056    SUB SetColor (fCol, bCol)
+ 0FA3    **        I00108:
+ 0FA3    **        L00000:   jmp     I00110
+ 0FA6    **        SETCOLOR: mov     cx,0000h
+ 0FA9    **                  mov     bx,0000h
+ 0FAC    **                  call    B$ENRA
+ 0FB1   0056            COLOR fCol, bCol
+ 0FB1   0056            fColor = fCol
+ 0FB1   0056            bColor = bCol
+ 0FB1   0056    END SUB
+ 0FB1    **        L00000:   mov     ax,0001h
+ 0FB4    **                  push    ax
+ 0FB5    **                  mov     si,08h[bp]
+ 0FB8    **                  int     35h
+ 0FBA    **                  db      04h
+ 0FBB    **                  call    B$FIS2
+                                                                      PAGE  43
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 0FC0    **                  push    ax
+ 0FC1    **                  mov     ax,0001h
+ 0FC4    **                  push    ax
+ 0FC5    **                  mov     si,06h[bp]
+ 0FC8    **                  int     35h
+ 0FCA    **                  db      04h
+ 0FCB    **                  call    B$FIS2
+ 0FD0    **                  push    ax
+ 0FD1    **                  mov     ax,0004h
+ 0FD4    **                  push    ax
+ 0FD5    **                  call    B$COLR
+ 0FDA    **        L00000:   mov     si,08h[bp]
+ 0FDD    **                  int     35h
+ 0FDF    **                  db      04h
+ 0FE0    **                  int     3Bh
+ 0FE2    **                  db      1Eh
+ 0FE3    **                  dw      FCOLOR%
+ 0FE5    **                  int     3Dh
+ 0FE7    **        L00000:   mov     si,06h[bp]
+ 0FEA    **                  int     35h
+ 0FEC    **                  db      04h
+ 0FED    **                  int     3Bh
+ 0FEF    **                  db      1Eh
+ 0FF0    **                  dw      BCOLOR%
+ 0FF2    **                  int     3Dh
+ 0FF4    **        L00000:
+ 0FF4    **        I00111:   call    B$EXSA
+ 0FF9    **                  ret     0004h
+ 0FFC   0056    
+ 0FFC   0056    SUB SetFColor (fCol)
+ 0FFC    **        I00110:
+ 0FFC    **        L00000:   jmp     I00112
+ 0FFF    **        SETFCOLOR:
+ 0FFF    **                  mov     cx,0000h
+ 1002    **                  mov     bx,0000h
+ 1005    **                  call    B$ENRA
+ 100A   0056            COLOR fCol, bColor
+ 100A   0056            fColor = fCol
+ 100A   0056    END SUB
+ 100A    **        L00000:   mov     ax,0001h
+ 100D    **                  push    ax
+ 100E    **                  mov     si,06h[bp]
+ 1011    **                  int     35h
+ 1013    **                  db      04h
+ 1014    **                  call    B$FIS2
+ 1019    **                  push    ax
+ 101A    **                  mov     ax,0001h
+ 101D    **                  push    ax
+ 101E    **                  push    BCOLOR%
+ 1022    **                  mov     ax,0004h
+ 1025    **                  push    ax
+ 1026    **                  call    B$COLR
+ 102B    **        L00000:   mov     si,06h[bp]
+ 102E    **                  int     35h
+                                                                      PAGE  44
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1030    **                  db      04h
+ 1031    **                  int     3Bh
+ 1033    **                  db      1Eh
+ 1034    **                  dw      FCOLOR%
+ 1036    **                  int     3Dh
+ 1038    **        L00000:
+ 1038    **        I00113:   call    B$EXSA
+ 103D    **                  ret     0002h
+ 1040   0056    
+ 1040   0056    SUB SetPos (x%, y%)
+ 1040    **        I00112:
+ 1040    **        L00000:   jmp     I00114
+ 1043    **        SETPOS:   mov     cx,0000h
+ 1046    **                  mov     bx,0000h
+ 1049    **                  call    B$ENRA
+ 104E   0056            SHARED isCaretVisible AS INTEGER
+ 104E   0056            SHARED xCaretPos AS INTEGER
+ 104E   0056            SHARED yCaretPos AS INTEGER
+ 104E   0056    
+ 104E   0056            IF x% > 0 AND x% <= 80 AND y% > 0 AND y% <= 25 THEN
+ 104E   0056                    LOCATE y%, x%, isCaretVisible
+ 104E   0056                    xCaretPos = x%
+ 104E   0056                    yCaretPos = y%
+ 104E   0056            END IF
+ 104E    **        L00000:
+ 104E    **        L00000:
+ 104E    **        L00000:
+ 104E    **        L00000:   mov     si,08h[bp]
+ 1051    **                  cmp     word ptr [si],00h
+ 1054    **                  jng     I00116
+ 1056    **                  cmp     word ptr [si],50h
+ 1059    **                  jg      I00116
+ 105B    **                  mov     si,06h[bp]
+ 105E    **                  cmp     word ptr [si],00h
+ 1061    **                  jng     I00116
+ 1063    **                  cmp     word ptr [si],19h
+ 1066    **                  jg      I00116
+ 1068    **        L00000:   mov     ax,0001h
+ 106B    **                  push    ax
+ 106C    **                  mov     si,06h[bp]
+ 106F    **                  push    [si]
+ 1071    **                  push    ax
+ 1072    **                  mov     si,08h[bp]
+ 1075    **                  push    [si]
+ 1077    **                  push    ax
+ 1078    **                  push    ISCARETVISIBLE%
+ 107C    **                  mov     ax,0006h
+ 107F    **                  push    ax
+ 1080    **                  call    B$LOCT
+ 1085    **        L00000:   mov     si,08h[bp]
+ 1088    **                  mov     ax,[si]
+ 108A    **                  mov     XCARETPOS%,ax
+ 108D    **        L00000:   mov     si,06h[bp]
+ 1090    **                  mov     ax,[si]
+                                                                      PAGE  45
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1092    **                  mov     YCARETPOS%,ax
+ 1095    **        L00000:
+ 1095   0056    END SUB
+ 1095    **        I00116:
+ 1095    **        L00000:
+ 1095    **        I00115:   call    B$EXSA
+ 109A    **                  ret     0004h
+ 109D   0056    
+ 109D   0056    ' shift part of the string starting from stPos
+ 109D   0056    SUB ShiftStrLeft (s$, stPos%)
+ 109D    **        I00114:
+ 109D    **        L00000:   jmp     I00117
+ 10A0    **        SHIFTSTRLEFT:
+ 10A0    **                  mov     cx,0000h
+ 10A3    **                  mov     bx,0000h
+ 10A6    **                  call    B$ENRA
+ 10AB   0056            IF stPos% <= LEN(s$) THEN
+ 10AB   0056                    FOR k = stPos% TO LEN(s$) - 1
+ 10AB    **        L00000:   mov     si,06h[bp]
+ 10AE    **                  mov     ax,[si]
+ 10B0    **                  push    08h[bp]
+ 10B3    **                  mov     0E8h[bp],ax
+ 10B6    **                  call    B$FLEN
+ 10BB    **                  cmp     ax,0E8h[bp]
+ 10BE    **                  jnl     $+03h
+ 10C0    **                  jmp     I00119
+ 10C3    **        L00000:   push    08h[bp]
+ 10C6    **                  call    B$FLEN
+ 10CB    **                  dec     ax
+ 10CC    **                  call    B$FIL2
+ 10D1    **                  int     35h
+ 10D3    **                  db      5Eh
+ 10D4    **                  db      0EAh
+ 10D5    **                  int     3Dh
+ 10D7    **                  mov     si,06h[bp]
+ 10DA    **                  int     3Bh
+ 10DC    **                  db      04h
+ 10DD    **                  jmp     I00120
+ 10E0   0056                            MID$(s$, k) = MID$(s$, k + 1, 1)
+ 10E0   0056                    NEXT
+ 10E0    **        I00121:
+ 10E0    **        L00000:   push    ds
+ 10E1    **                  push    08h[bp]
+ 10E4    **                  xor     ax,ax
+ 10E6    **                  push    ax
+ 10E7    **                  push    08h[bp]
+ 10EA    **                  int     35h
+ 10EC    **                  db      46h
+ 10ED    **                  db      0E4h
+ 10EE    **                  int     34h
+ 10F0    **                  db      06h
+ 10F1    **                  dw      <0000803F>
+ 10F3    **                  call    B$FIS2
+ 10F8    **                  push    ax
+                                                                      PAGE  46
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 10F9    **                  mov     ax,0001h
+ 10FC    **                  push    ax
+ 10FD    **                  call    B$FMID
+ 1102    **                  push    ax
+ 1103    **                  mov     ax,7FFFh
+ 1106    **                  push    ax
+ 1107    **                  int     35h
+ 1109    **                  db      46h
+ 110A    **                  db      0E4h
+ 110B    **                  call    B$FIS2
+ 1110    **                  push    ax
+ 1111    **                  call    B$SMID
+ 1116    **        L00000:   int     35h
+ 1118    **                  db      46h
+ 1119    **                  db      0E4h
+ 111A    **                  int     34h
+ 111C    **                  db      06h
+ 111D    **                  dw      <0000803F>
+ 111F    **        I00120:   int     35h
+ 1121    **                  db      5Eh
+ 1122    **                  db      0E4h
+ 1123    **                  int     3Dh
+ 1125    **                  int     35h
+ 1127    **                  db      46h
+ 1128    **                  db      0EAh
+ 1129    **                  int     35h
+ 112B    **                  db      46h
+ 112C    **                  db      0E4h
+ 112D    **                  int     3Dh
+ 112F    **                  call    B$FCMP
+ 1134    **                  jna     I00121
+ 1136   0056                    IF LEN(s$) > 0 THEN
+ 1136   0056                            s$ = MID$(s$, 1, LEN(s$) - 1)
+ 1136   0056                    END IF
+ 1136    **        L00000:   push    08h[bp]
+ 1139    **                  call    B$FLEN
+ 113E    **                  or      ax,ax
+ 1140    **                  jng     I00122
+ 1142    **        L00000:   push    08h[bp]
+ 1145    **                  mov     ax,0001h
+ 1148    **                  push    ax
+ 1149    **                  push    08h[bp]
+ 114C    **                  call    B$FLEN
+ 1151    **                  dec     ax
+ 1152    **                  push    ax
+ 1153    **                  call    B$FMID
+ 1158    **                  push    ax
+ 1159    **                  push    08h[bp]
+ 115C    **                  call    B$SASS
+ 1161    **        L00000:
+ 1161   0056            END IF
+ 1161    **        I00122:
+ 1161    **        L00000:
+ 1161   0056    END SUB
+                                                                      PAGE  47
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1161    **        I00119:
+ 1161    **        L00000:
+ 1161    **        I00118:   call    B$EXSA
+ 1166    **                  ret     0004h
+ 1169   0056    
+ 1169   0056    SUB ShowCaret
+ 1169    **        I00117:
+ 1169    **        L00000:   jmp     I00123
+ 116C    **        SHOWCARET:
+ 116C    **                  mov     cx,0000h
+ 116F    **                  mov     bx,0000h
+ 1172    **                  call    B$ENRA
+ 1177   0056            SHARED isCaretVisible AS INTEGER
+ 1177   0056    
+ 1177   0056            isCaretVisible = 1
+ 1177   0056            SetPos xCaretPos%, yCaretPos%
+ 1177    **        L00000:
+ 1177    **        L00000:   mov     ISCARETVISIBLE%,0001h
+ 117D    **        L00000:   mov     ax,offset XCARETPOS%
+ 1180    **                  push    ax
+ 1181    **                  mov     ax,offset YCARETPOS%
+ 1184    **                  push    ax
+ 1185    **                  call    SETPOS
+ 118A   0056    END SUB
+ 118A    **        L00000:
+ 118A    **        I00124:   call    B$EXSA
+ 118F    **                  ret     0000h
+ 1192   0056    
+ 1192   0056    FUNCTION ToStr$ (num!)
+ 1192    **        I00123:
+ 1192    **        L00000:   jmp     I00125
+ 1195    **        TOSTR$:   mov     cx,0000h
+ 1198    **                  mov     bx,0000h
+ 119B    **                  call    B$ENRA
+ 11A0   0056            ToStr$ = LTRIM$(STR$(num!))
+ 11A0   0056    END FUNCTION
+ 11A0    **        L00000:   mov     si,06h[bp]
+ 11A3    **                  push    02h[si]
+ 11A6    **                  push    [si]
+ 11A8    **                  call    B$STR4
+ 11AD    **                  push    ax
+ 11AE    **                  call    B$LTRM
+ 11B3    **                  push    ax
+ 11B4    **                  lea     ax,0EAh[bp]
+ 11B7    **                  push    ax
+ 11B8    **                  call    B$SASS
+ 11BD    **        L00000:
+ 11BD    **        I00126:   lea     ax,0EAh[bp]
+ 11C0    **                  push    ax
+ 11C1    **                  call    B$SCPF
+ 11C6    **                  call    B$EXSA
+ 11CB    **                  ret     0002h
+ 11CE   0056    
+ 11CE   0056    FUNCTION ToZeroStr$ (num!, length)
+                                                                      PAGE  48
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 11CE    **        I00125:
+ 11CE    **        L00000:   jmp     I00127
+ 11D1    **        TOZEROSTR$:
+ 11D1    **                  mov     cx,0000h
+ 11D4    **                  mov     bx,0000h
+ 11D7    **                  call    B$ENRA
+ 11DC   0056            ' does not work with negative numbers!
+ 11DC   0056    
+ 11DC   0056            res$ = ToStr$(num!)
+ 11DC   0056    
+ 11DC   0056            WHILE LEN(res$) < length
+ 11DC    **        L00000:   push    08h[bp]
+ 11DF    **                  call    TOSTR$
+ 11E4    **                  push    ax
+ 11E5    **                  lea     ax,0EAh[bp]
+ 11E8    **                  push    ax
+ 11E9    **                  call    B$SASS
+ 11EE    **                  lea     ax,0EAh[bp]
+ 11F1    **                  push    ax
+ 11F2    **                  lea     ax,0E6h[bp]
+ 11F5    **                  push    ax
+ 11F6    **                  call    B$SASS
+ 11FB    **        L00000:   nop     
+ 11FC   0056                    res$ = "0" + res$
+ 11FC   0056            WEND
+ 11FC    **        I00129:   mov     si,06h[bp]
+ 11FF    **                  int     35h
+ 1201    **                  db      04h
+ 1202    **                  lea     ax,0E6h[bp]
+ 1205    **                  push    ax
+ 1206    **                  call    B$FLEN
+ 120B    **                  call    B$FIL2
+ 1210    **                  int     3Dh
+ 1212    **                  call    B$FCMP
+ 1217    **                  jnb     I00130
+ 1219    **        L00000:   lea     ax,0E6h[bp]
+ 121C    **                  push    ax
+ 121D    **                  mov     ax,offset <const>
+ 1220    **                  push    ax
+ 1221    **                  lea     ax,0E6h[bp]
+ 1224    **                  push    ax
+ 1225    **                  call    B$SACT
+ 122A    **        L00000:   jmp     I00129
+ 122C   0056    
+ 122C   0056            ToZeroStr$ = res$
+ 122C   0056    END FUNCTION
+ 122C    **        I00130:
+ 122C    **        L00000:   lea     ax,0E6h[bp]
+ 122F    **                  push    ax
+ 1230    **                  lea     ax,0E2h[bp]
+ 1233    **                  push    ax
+ 1234    **                  call    B$SASS
+ 1239    **        L00000:
+ 1239    **        I00128:   lea     ax,0E2h[bp]
+                                                                      PAGE  49
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 123C    **                  push    ax
+ 123D    **                  call    B$SCPF
+ 1242    **                  call    B$EXSA
+ 1247    **                  ret     0004h
+ 124A   0056    
+ 124A   0056    '########################### Windows ##########################
+                ###
+ 124A   0056    SUB WndDraw (x1, y1, x2, y2, wnd AS WndType, title$)
+ 124A    **        I00127:
+ 124A    **        L00000:   jmp     I00131
+ 124D    **        WNDDRAW:  mov     cx,0000h
+ 1250    **                  mov     bx,0000h
+ 1253    **                  call    B$ENRA
+ 1258   0056            IF wnd.frameType = 0 THEN wnd.frameType = 1
+ 1258    **        L00000:   mov     ax,08h[bp]
+ 125B    **                  add     ax,0004h
+ 125E    **                  mov     si,ax
+ 1260    **                  cmp     word ptr [si],00h
+ 1263    **                  jne     I00133
+ 1265    **        L00000:   mov     ax,08h[bp]
+ 1268    **                  add     ax,0004h
+ 126B    **                  mov     si,ax
+ 126D    **                  mov     [si],0001h
+ 1271   0056            IF wnd.frameColor = 0 THEN wnd.frameColor = 7
+ 1271    **        I00133:
+ 1271    **        L00000:   mov     si,08h[bp]
+ 1274    **                  cmp     word ptr [si],00h
+ 1277    **                  jne     I00134
+ 1279    **        L00000:   mov     si,08h[bp]
+ 127C    **                  mov     [si],0007h
+ 1280   0056    
+ 1280   0056            DIM psCode(7) AS SINGLE
+ 1280    **        I00134:
+ 1280    **        L00000:   xor     ax,ax
+ 1282    **                  push    ax
+ 1283    **                  mov     ax,0007h
+ 1286    **                  push    ax
+ 1287    **                  mov     ax,0004h
+ 128A    **                  push    ax
+ 128B    **                  mov     ax,0101h
+ 128E    **                  push    ax
+ 128F    **                  lea     ax,0DCh[bp]
+ 1292    **                  push    ax
+ 1293    **                  call    B$DDIM
+ 1298   0056            DIM ps(1 TO 3) AS STRING
+ 1298    **        L00000:   mov     ax,0001h
+ 129B    **                  push    ax
+ 129C    **                  mov     ax,0003h
+ 129F    **                  push    ax
+ 12A0    **                  mov     ax,0004h
+ 12A3    **                  push    ax
+ 12A4    **                  mov     ax,8001h
+ 12A7    **                  push    ax
+ 12A8    **                  lea     ax,0CAh[bp]
+                                                                      PAGE  50
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 12AB    **                  push    ax
+ 12AC    **                  call    B$DDIM
+ 12B1   0056            ps(1) = "┌─┐│└─┘"
+ 12B1   0056            ps(2) = "╔═╗║╚═╝"
+ 12B1   0056            ps(3) = "███║╚═╝"
+ 12B1   0056    
+ 12B1   0056            FOR k = 1 TO 7
+ 12B1    **        L00000:   mov     ax,offset <const>
+ 12B4    **                  push    ax
+ 12B5    **                  lea     si,0CAh[bp]
+ 12B8    **                  mov     bx,0004h
+ 12BB    **                  add     bx,0Ah[si]
+ 12BE    **                  push    bx
+ 12BF    **                  call    B$SASS
+ 12C4    **        L00000:   mov     ax,offset <const>
+ 12C7    **                  push    ax
+ 12C8    **                  lea     si,0CAh[bp]
+ 12CB    **                  mov     bx,0008h
+ 12CE    **                  add     bx,0Ah[si]
+ 12D1    **                  push    bx
+ 12D2    **                  call    B$SASS
+ 12D7    **        L00000:   mov     ax,offset <const>
+ 12DA    **                  push    ax
+ 12DB    **                  lea     si,0CAh[bp]
+ 12DE    **                  mov     bx,000Ch
+ 12E1    **                  add     bx,0Ah[si]
+ 12E4    **                  push    bx
+ 12E5    **                  call    B$SASS
+ 12EA    **        L00000:   int     35h
+ 12EC    **                  db      06h
+ 12ED    **                  dw      <0000803F>
+ 12EF    **                  jmp     I00135
+ 12F2   0056                    psCode(k) = ASC(MID$(ps(wnd.frameType), k, 1))
+ 12F2   0056            NEXT
+ 12F2    **        I00136:
+ 12F2    **        L00000:   mov     ax,08h[bp]
+ 12F5    **                  add     ax,0004h
+ 12F8    **                  mov     si,ax
+ 12FA    **                  mov     bx,[si]
+ 12FC    **                  sal     bx,1
+ 12FE    **                  sal     bx,1
+ 1300    **                  lea     si,0CAh[bp]
+ 1303    **                  add     bx,0Ah[si]
+ 1306    **                  push    bx
+ 1307    **                  int     35h
+ 1309    **                  db      46h
+ 130A    **                  db      0C2h
+ 130B    **                  call    B$FIS2
+ 1310    **                  push    ax
+ 1311    **                  mov     ax,0001h
+ 1314    **                  push    ax
+ 1315    **                  call    B$FMID
+ 131A    **                  push    ax
+ 131B    **                  lea     ax,0C6h[bp]
+                                                                      PAGE  51
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 131E    **                  push    ax
+ 131F    **                  call    B$SASS
+ 1324    **                  lea     ax,0C6h[bp]
+ 1327    **                  push    ax
+ 1328    **                  call    B$FASC
+ 132D    **                  call    B$FIL2
+ 1332    **                  int     35h
+ 1334    **                  db      46h
+ 1335    **                  db      0C2h
+ 1336    **                  call    B$FIS2
+ 133B    **                  sal     ax,1
+ 133D    **                  sal     ax,1
+ 133F    **                  mov     bx,ax
+ 1341    **                  lea     si,0DCh[bp]
+ 1344    **                  add     bx,0Ah[si]
+ 1347    **                  mov     es,02h[si]
+ 134A    **                  int     3Ch
+ 134C    **                  db      0D9h
+ 134D    **                  db      1Fh
+ 134E    **                  int     3Dh
+ 1350    **        L00000:   int     35h
+ 1352    **                  db      46h
+ 1353    **                  db      0C2h
+ 1354    **                  int     34h
+ 1356    **                  db      06h
+ 1357    **                  dw      <0000803F>
+ 1359    **        I00135:   int     35h
+ 135B    **                  db      5Eh
+ 135C    **                  db      0C2h
+ 135D    **                  int     3Dh
+ 135F    **                  int     35h
+ 1361    **                  db      06h
+ 1362    **                  dw      <0000E040>
+ 1364    **                  int     35h
+ 1366    **                  db      46h
+ 1367    **                  db      0C2h
+ 1368    **                  int     3Dh
+ 136A    **                  call    B$FCMP
+ 136F    **                  jna     I00136
+ 1371   0056    
+ 1371   0056            COLOR wnd.frameColor, wnd.backColor
+ 1371   0056            CALL WndPutc(x1, y1, psCode(1))
+ 1371    **        L00000:   mov     ax,0001h
+ 1374    **                  push    ax
+ 1375    **                  mov     si,08h[bp]
+ 1378    **                  push    [si]
+ 137A    **                  push    ax
+ 137B    **                  add     si,02h
+ 137E    **                  push    [si]
+ 1380    **                  mov     ax,0004h
+ 1383    **                  push    ax
+ 1384    **                  call    B$COLR
+ 1389    **        L00000:   lea     si,0DCh[bp]
+ 138C    **                  mov     bx,0004h
+                                                                      PAGE  52
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 138F    **                  add     bx,0Ah[si]
+ 1392    **                  mov     es,02h[si]
+ 1395    **                  int     3Ch
+ 1397    **                  db      0D9h
+ 1398    **                  db      07h
+ 1399    **                  int     35h
+ 139B    **                  db      5Eh
+ 139C    **                  db      0BEh
+ 139D    **                  int     3Dh
+ 139F    **                  push    10h[bp]
+ 13A2    **                  push    0Eh[bp]
+ 13A5    **                  lea     ax,0BEh[bp]
+ 13A8    **                  push    ax
+ 13A9    **                  call    WNDPUTC
+ 13AE    **                  int     35h
+ 13B0    **                  db      46h
+ 13B1    **                  db      0BEh
+ 13B2    **                  lea     si,0DCh[bp]
+ 13B5    **                  mov     bx,0004h
+ 13B8    **                  add     bx,0Ah[si]
+ 13BB    **                  mov     es,02h[si]
+ 13BE    **                  int     3Ch
+ 13C0    **                  db      0D9h
+ 13C1    **                  db      1Fh
+ 13C2    **                  int     3Dh
+ 13C4   0056            CALL WndPuthl(x1 + 1, x2 - 1, y1, psCode(2))
+ 13C4    **        L00000:   mov     si,10h[bp]
+ 13C7    **                  int     35h
+ 13C9    **                  db      04h
+ 13CA    **                  int     34h
+ 13CC    **                  db      06h
+ 13CD    **                  dw      <0000803F>
+ 13CF    **                  int     35h
+ 13D1    **                  db      5Eh
+ 13D2    **                  db      0BAh
+ 13D3    **                  int     3Dh
+ 13D5    **                  mov     si,0Ch[bp]
+ 13D8    **                  int     35h
+ 13DA    **                  db      04h
+ 13DB    **                  int     34h
+ 13DD    **                  db      26h
+ 13DE    **                  dw      <0000803F>
+ 13E0    **                  int     35h
+ 13E2    **                  db      5Eh
+ 13E3    **                  db      0B6h
+ 13E4    **                  int     3Dh
+ 13E6    **                  lea     si,0DCh[bp]
+ 13E9    **                  mov     bx,0008h
+ 13EC    **                  add     bx,0Ah[si]
+ 13EF    **                  mov     es,02h[si]
+ 13F2    **                  int     3Ch
+ 13F4    **                  db      0D9h
+ 13F5    **                  db      07h
+ 13F6    **                  int     35h
+                                                                      PAGE  53
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 13F8    **                  db      5Eh
+ 13F9    **                  db      0B2h
+ 13FA    **                  int     3Dh
+ 13FC    **                  lea     ax,0BAh[bp]
+ 13FF    **                  push    ax
+ 1400    **                  lea     ax,0B6h[bp]
+ 1403    **                  push    ax
+ 1404    **                  push    0Eh[bp]
+ 1407    **                  lea     ax,0B2h[bp]
+ 140A    **                  push    ax
+ 140B    **                  call    WNDPUTHL
+ 1410    **                  int     35h
+ 1412    **                  db      46h
+ 1413    **                  db      0B2h
+ 1414    **                  lea     si,0DCh[bp]
+ 1417    **                  mov     bx,0008h
+ 141A    **                  add     bx,0Ah[si]
+ 141D    **                  mov     es,02h[si]
+ 1420    **                  int     3Ch
+ 1422    **                  db      0D9h
+ 1423    **                  db      1Fh
+ 1424    **                  int     3Dh
+ 1426   0056            CALL WndPutc(x2, y1, psCode(3))
+ 1426    **        L00000:   lea     si,0DCh[bp]
+ 1429    **                  mov     bx,000Ch
+ 142C    **                  add     bx,0Ah[si]
+ 142F    **                  mov     es,02h[si]
+ 1432    **                  int     3Ch
+ 1434    **                  db      0D9h
+ 1435    **                  db      07h
+ 1436    **                  int     35h
+ 1438    **                  db      5Eh
+ 1439    **                  db      0AEh
+ 143A    **                  int     3Dh
+ 143C    **                  push    0Ch[bp]
+ 143F    **                  push    0Eh[bp]
+ 1442    **                  lea     ax,0AEh[bp]
+ 1445    **                  push    ax
+ 1446    **                  call    WNDPUTC
+ 144B    **                  int     35h
+ 144D    **                  db      46h
+ 144E    **                  db      0AEh
+ 144F    **                  lea     si,0DCh[bp]
+ 1452    **                  mov     bx,000Ch
+ 1455    **                  add     bx,0Ah[si]
+ 1458    **                  mov     es,02h[si]
+ 145B    **                  int     3Ch
+ 145D    **                  db      0D9h
+ 145E    **                  db      1Fh
+ 145F    **                  int     3Dh
+ 1461   0056            CALL WndPutvl(x1, y1 + 1, y2 - 1, psCode(4))
+ 1461    **        L00000:   mov     si,0Eh[bp]
+ 1464    **                  int     35h
+ 1466    **                  db      04h
+                                                                      PAGE  54
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1467    **                  int     34h
+ 1469    **                  db      06h
+ 146A    **                  dw      <0000803F>
+ 146C    **                  int     35h
+ 146E    **                  db      5Eh
+ 146F    **                  db      0AAh
+ 1470    **                  int     3Dh
+ 1472    **                  mov     si,0Ah[bp]
+ 1475    **                  int     35h
+ 1477    **                  db      04h
+ 1478    **                  int     34h
+ 147A    **                  db      26h
+ 147B    **                  dw      <0000803F>
+ 147D    **                  int     35h
+ 147F    **                  db      5Eh
+ 1480    **                  db      0A6h
+ 1481    **                  int     3Dh
+ 1483    **                  lea     si,0DCh[bp]
+ 1486    **                  mov     bx,0010h
+ 1489    **                  add     bx,0Ah[si]
+ 148C    **                  mov     es,02h[si]
+ 148F    **                  int     3Ch
+ 1491    **                  db      0D9h
+ 1492    **                  db      07h
+ 1493    **                  int     35h
+ 1495    **                  db      5Eh
+ 1496    **                  db      0A2h
+ 1497    **                  int     3Dh
+ 1499    **                  push    10h[bp]
+ 149C    **                  lea     ax,0AAh[bp]
+ 149F    **                  push    ax
+ 14A0    **                  lea     ax,0A6h[bp]
+ 14A3    **                  push    ax
+ 14A4    **                  lea     ax,0A2h[bp]
+ 14A7    **                  push    ax
+ 14A8    **                  call    WNDPUTVL
+ 14AD    **                  int     35h
+ 14AF    **                  db      46h
+ 14B0    **                  db      0A2h
+ 14B1    **                  lea     si,0DCh[bp]
+ 14B4    **                  mov     bx,0010h
+ 14B7    **                  add     bx,0Ah[si]
+ 14BA    **                  mov     es,02h[si]
+ 14BD    **                  int     3Ch
+ 14BF    **                  db      0D9h
+ 14C0    **                  db      1Fh
+ 14C1    **                  int     3Dh
+ 14C3   0056            CALL WndPutc(x1, y2, psCode(5))
+ 14C3    **        L00000:   lea     si,0DCh[bp]
+ 14C6    **                  mov     bx,0014h
+ 14C9    **                  add     bx,0Ah[si]
+ 14CC    **                  mov     es,02h[si]
+ 14CF    **                  int     3Ch
+ 14D1    **                  db      0D9h
+                                                                      PAGE  55
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 14D2    **                  db      07h
+ 14D3    **                  int     35h
+ 14D5    **                  db      5Eh
+ 14D6    **                  db      9Eh
+ 14D7    **                  int     3Dh
+ 14D9    **                  push    10h[bp]
+ 14DC    **                  push    0Ah[bp]
+ 14DF    **                  lea     ax,9Eh[bp]
+ 14E2    **                  push    ax
+ 14E3    **                  call    WNDPUTC
+ 14E8    **                  int     35h
+ 14EA    **                  db      46h
+ 14EB    **                  db      9Eh
+ 14EC    **                  lea     si,0DCh[bp]
+ 14EF    **                  mov     bx,0014h
+ 14F2    **                  add     bx,0Ah[si]
+ 14F5    **                  mov     es,02h[si]
+ 14F8    **                  int     3Ch
+ 14FA    **                  db      0D9h
+ 14FB    **                  db      1Fh
+ 14FC    **                  int     3Dh
+ 14FE   0056            CALL WndPuthl(x1 + 1, x2 - 1, y2, psCode(2))
+ 14FE    **        L00000:   mov     si,10h[bp]
+ 1501    **                  int     35h
+ 1503    **                  db      04h
+ 1504    **                  int     34h
+ 1506    **                  db      06h
+ 1507    **                  dw      <0000803F>
+ 1509    **                  int     35h
+ 150B    **                  db      5Eh
+ 150C    **                  db      9Ah
+ 150D    **                  int     3Dh
+ 150F    **                  mov     si,0Ch[bp]
+ 1512    **                  int     35h
+ 1514    **                  db      04h
+ 1515    **                  int     34h
+ 1517    **                  db      26h
+ 1518    **                  dw      <0000803F>
+ 151A    **                  int     35h
+ 151C    **                  db      5Eh
+ 151D    **                  db      96h
+ 151E    **                  int     3Dh
+ 1520    **                  lea     si,0DCh[bp]
+ 1523    **                  mov     bx,0008h
+ 1526    **                  add     bx,0Ah[si]
+ 1529    **                  mov     es,02h[si]
+ 152C    **                  int     3Ch
+ 152E    **                  db      0D9h
+ 152F    **                  db      07h
+ 1530    **                  int     35h
+ 1532    **                  db      5Eh
+ 1533    **                  db      92h
+ 1534    **                  int     3Dh
+ 1536    **                  lea     ax,9Ah[bp]
+                                                                      PAGE  56
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1539    **                  push    ax
+ 153A    **                  lea     ax,96h[bp]
+ 153D    **                  push    ax
+ 153E    **                  push    0Ah[bp]
+ 1541    **                  lea     ax,92h[bp]
+ 1544    **                  push    ax
+ 1545    **                  call    WNDPUTHL
+ 154A    **                  int     35h
+ 154C    **                  db      46h
+ 154D    **                  db      92h
+ 154E    **                  lea     si,0DCh[bp]
+ 1551    **                  mov     bx,0008h
+ 1554    **                  add     bx,0Ah[si]
+ 1557    **                  mov     es,02h[si]
+ 155A    **                  int     3Ch
+ 155C    **                  db      0D9h
+ 155D    **                  db      1Fh
+ 155E    **                  int     3Dh
+ 1560   0056            CALL WndPutvl(x2, y1 + 1, y2 - 1, psCode(4))
+ 1560    **        L00000:   mov     si,0Eh[bp]
+ 1563    **                  int     35h
+ 1565    **                  db      04h
+ 1566    **                  int     34h
+ 1568    **                  db      06h
+ 1569    **                  dw      <0000803F>
+ 156B    **                  int     35h
+ 156D    **                  db      5Eh
+ 156E    **                  db      8Eh
+ 156F    **                  int     3Dh
+ 1571    **                  mov     si,0Ah[bp]
+ 1574    **                  int     35h
+ 1576    **                  db      04h
+ 1577    **                  int     34h
+ 1579    **                  db      26h
+ 157A    **                  dw      <0000803F>
+ 157C    **                  int     35h
+ 157E    **                  db      5Eh
+ 157F    **                  db      8Ah
+ 1580    **                  int     3Dh
+ 1582    **                  lea     si,0DCh[bp]
+ 1585    **                  mov     bx,0010h
+ 1588    **                  add     bx,0Ah[si]
+ 158B    **                  mov     es,02h[si]
+ 158E    **                  int     3Ch
+ 1590    **                  db      0D9h
+ 1591    **                  db      07h
+ 1592    **                  int     35h
+ 1594    **                  db      5Eh
+ 1595    **                  db      86h
+ 1596    **                  int     3Dh
+ 1598    **                  push    0Ch[bp]
+ 159B    **                  lea     ax,8Eh[bp]
+ 159E    **                  push    ax
+ 159F    **                  lea     ax,8Ah[bp]
+                                                                      PAGE  57
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 15A2    **                  push    ax
+ 15A3    **                  lea     ax,86h[bp]
+ 15A6    **                  push    ax
+ 15A7    **                  call    WNDPUTVL
+ 15AC    **                  int     35h
+ 15AE    **                  db      46h
+ 15AF    **                  db      86h
+ 15B0    **                  lea     si,0DCh[bp]
+ 15B3    **                  mov     bx,0010h
+ 15B6    **                  add     bx,0Ah[si]
+ 15B9    **                  mov     es,02h[si]
+ 15BC    **                  int     3Ch
+ 15BE    **                  db      0D9h
+ 15BF    **                  db      1Fh
+ 15C0    **                  int     3Dh
+ 15C2   0056    
+ 15C2   0056            'right bottom corner
+ 15C2   0056            CALL WndPutc(x2, y2, psCode(7))
+ 15C2    **        L00000:   lea     si,0DCh[bp]
+ 15C5    **                  mov     bx,001Ch
+ 15C8    **                  add     bx,0Ah[si]
+ 15CB    **                  mov     es,02h[si]
+ 15CE    **                  int     3Ch
+ 15D0    **                  db      0D9h
+ 15D1    **                  db      07h
+ 15D2    **                  int     35h
+ 15D4    **                  db      5Eh
+ 15D5    **                  db      82h
+ 15D6    **                  int     3Dh
+ 15D8    **                  push    0Ch[bp]
+ 15DB    **                  push    0Ah[bp]
+ 15DE    **                  lea     ax,82h[bp]
+ 15E1    **                  push    ax
+ 15E2    **                  call    WNDPUTC
+ 15E7    **                  int     35h
+ 15E9    **                  db      46h
+ 15EA    **                  db      82h
+ 15EB    **                  lea     si,0DCh[bp]
+ 15EE    **                  mov     bx,001Ch
+ 15F1    **                  add     bx,0Ah[si]
+ 15F4    **                  mov     es,02h[si]
+ 15F7    **                  int     3Ch
+ 15F9    **                  db      0D9h
+ 15FA    **                  db      1Fh
+ 15FB    **                  int     3Dh
+ 15FD   0056    
+ 15FD   0056            IF title$ <> "" THEN
+ 15FD   0056                    CALL CenterText(x1, x2, y1, title$)
+ 15FD    **        L00000:   push    06h[bp]
+ 1600    **                  mov     ax,offset <const>
+ 1603    **                  push    ax
+ 1604    **                  call    B$SCMP
+ 1609    **                  jne     $+03h
+ 160B    **                  jmp     I00137
+                                                                      PAGE  58
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 160E    **        L00000:   push    10h[bp]
+ 1611    **                  push    0Ch[bp]
+ 1614    **                  push    0Eh[bp]
+ 1617    **                  push    06h[bp]
+ 161A    **                  call    CENTERTEXT
+ 161F   0056            END IF
+ 161F    **        L00000:
+ 161F   0056    
+ 161F   0056            IF wnd.canClose = TRUE THEN
+ 161F   0056                    LOCATE y1, x1 + 2
+ 161F   0056                    PRINT "[■]";
+ 161F   0056            END IF
+ 161F    **        I00137:
+ 161F    **        L00000:   mov     ax,08h[bp]
+ 1622    **                  add     ax,0006h
+ 1625    **                  mov     si,ax
+ 1627    **                  cmp     word ptr [si],0FFh
+ 162A    **                  jne     I00138
+ 162C    **        L00000:   mov     ax,0001h
+ 162F    **                  push    ax
+ 1630    **                  mov     si,0Eh[bp]
+ 1633    **                  int     35h
+ 1635    **                  db      04h
+ 1636    **                  call    B$FIS2
+ 163B    **                  push    ax
+ 163C    **                  mov     ax,0001h
+ 163F    **                  push    ax
+ 1640    **                  mov     si,10h[bp]
+ 1643    **                  int     35h
+ 1645    **                  db      04h
+ 1646    **                  int     34h
+ 1648    **                  db      06h
+ 1649    **                  dw      <00000040>
+ 164B    **                  call    B$FIS2
+ 1650    **                  push    ax
+ 1651    **                  mov     ax,0004h
+ 1654    **                  push    ax
+ 1655    **                  call    B$LOCT
+ 165A    **        L00000:   mov     ax,offset <const>
+ 165D    **                  push    ax
+ 165E    **                  call    B$PSSD
+ 1663    **        L00000:
+ 1663   0056    
+ 1663   0056            ' fill
+ 1663   0056            COLOR wnd.backColor, wnd.backColor
+ 1663   0056            FOR k = y1 + 1 TO y2 - 1
+ 1663    **        I00138:
+ 1663    **        L00000:   mov     ax,0001h
+ 1666    **                  push    ax
+ 1667    **                  mov     cx,08h[bp]
+ 166A    **                  add     cx,02h
+ 166D    **                  mov     si,cx
+ 166F    **                  push    [si]
+ 1671    **                  push    ax
+                                                                      PAGE  59
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1672    **                  push    [si]
+ 1674    **                  mov     ax,0004h
+ 1677    **                  push    ax
+ 1678    **                  call    B$COLR
+ 167D    **        L00000:   mov     si,0Ah[bp]
+ 1680    **                  int     35h
+ 1682    **                  db      04h
+ 1683    **                  int     34h
+ 1685    **                  db      26h
+ 1686    **                  dw      <0000803F>
+ 1688    **                  int     35h
+ 168A    **                  db      9Eh
+ 168B    **                  dw      0FF7Eh
+ 168D    **                  int     3Dh
+ 168F    **                  mov     si,0Eh[bp]
+ 1692    **                  int     35h
+ 1694    **                  db      04h
+ 1695    **                  int     34h
+ 1697    **                  db      06h
+ 1698    **                  dw      <0000803F>
+ 169A    **                  jmp     I00139
+ 169D    **                  nop     
+ 169E   0056                    CALL WndPuthl(x1 + 1, x2 - 1, k, 32)
+ 169E    **        I00140:
+ 169E    **        L00000:   mov     si,10h[bp]
+ 16A1    **                  int     35h
+ 16A3    **                  db      04h
+ 16A4    **                  int     34h
+ 16A6    **                  db      06h
+ 16A7    **                  dw      <0000803F>
+ 16A9    **                  int     35h
+ 16AB    **                  db      9Eh
+ 16AC    **                  dw      0FF7Ah
+ 16AE    **                  int     3Dh
+ 16B0    **                  mov     si,0Ch[bp]
+ 16B3    **                  int     35h
+ 16B5    **                  db      04h
+ 16B6    **                  int     34h
+ 16B8    **                  db      26h
+ 16B9    **                  dw      <0000803F>
+ 16BB    **                  int     35h
+ 16BD    **                  db      9Eh
+ 16BE    **                  dw      0FF76h
+ 16C0    **                  int     3Dh
+ 16C2    **                  int     35h
+ 16C4    **                  db      06h
+ 16C5    **                  dw      <00000042>
+ 16C7    **                  int     35h
+ 16C9    **                  db      9Eh
+ 16CA    **                  dw      0FF72h
+ 16CC    **                  int     3Dh
+ 16CE    **                  lea     ax,0FF7Ah[bp]
+ 16D2    **                  push    ax
+ 16D3    **                  lea     ax,0FF76h[bp]
+                                                                      PAGE  60
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 16D7    **                  push    ax
+ 16D8    **                  lea     ax,0C2h[bp]
+ 16DB    **                  push    ax
+ 16DC    **                  lea     ax,0FF72h[bp]
+ 16E0    **                  push    ax
+ 16E1    **                  call    WNDPUTHL
+ 16E6   0056            NEXT k
+ 16E6    **        L00000:   int     35h
+ 16E8    **                  db      46h
+ 16E9    **                  db      0C2h
+ 16EA    **                  int     34h
+ 16EC    **                  db      06h
+ 16ED    **                  dw      <0000803F>
+ 16EF    **        I00139:   int     35h
+ 16F1    **                  db      5Eh
+ 16F2    **                  db      0C2h
+ 16F3    **                  int     3Dh
+ 16F5    **                  int     35h
+ 16F7    **                  db      86h
+ 16F8    **                  dw      0FF7Eh
+ 16FA    **                  int     35h
+ 16FC    **                  db      46h
+ 16FD    **                  db      0C2h
+ 16FE    **                  int     3Dh
+ 1700    **                  call    B$FCMP
+ 1705    **                  jna     I00140
+ 1707   0056    
+ 1707   0056            COLOR fColor, bColor
+ 1707   0056    END SUB
+ 1707    **        L00000:   mov     ax,0001h
+ 170A    **                  push    ax
+ 170B    **                  push    FCOLOR%
+ 170F    **                  push    ax
+ 1710    **                  push    BCOLOR%
+ 1714    **                  mov     ax,0004h
+ 1717    **                  push    ax
+ 1718    **                  call    B$COLR
+ 171D    **        L00000:
+ 171D    **        I00132:   lea     ax,0CAh[bp]
+ 1720    **                  push    ax
+ 1721    **                  call    B$ERS1
+ 1726    **                  lea     ax,0DCh[bp]
+ 1729    **                  push    ax
+ 172A    **                  call    B$ERAS
+ 172F    **                  call    B$EXSA
+ 1734    **                  ret     000Ch
+ 1737   0056    
+ 1737   0056    'Нарисовать символ с кодом code в координате (y, x)
+ 1737   0056    SUB WndPutc (x, y, code)
+ 1737    **        I00131:
+ 1737    **        L00000:   jmp     I00141
+ 173A    **        WNDPUTC:  mov     cx,0000h
+ 173D    **                  mov     bx,0000h
+ 1740    **                  call    B$ENRA
+                                                                      PAGE  61
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1745   0056            LOCATE y, x
+ 1745   0056            PRINT CHR$(code);
+ 1745   0056    END SUB
+ 1745    **        L00000:   mov     ax,0001h
+ 1748    **                  push    ax
+ 1749    **                  mov     si,08h[bp]
+ 174C    **                  int     35h
+ 174E    **                  db      04h
+ 174F    **                  call    B$FIS2
+ 1754    **                  push    ax
+ 1755    **                  mov     ax,0001h
+ 1758    **                  push    ax
+ 1759    **                  mov     si,0Ah[bp]
+ 175C    **                  int     35h
+ 175E    **                  db      04h
+ 175F    **                  call    B$FIS2
+ 1764    **                  push    ax
+ 1765    **                  mov     ax,0004h
+ 1768    **                  push    ax
+ 1769    **                  call    B$LOCT
+ 176E    **        L00000:   mov     si,06h[bp]
+ 1771    **                  int     35h
+ 1773    **                  db      04h
+ 1774    **                  call    B$FIS2
+ 1779    **                  push    ax
+ 177A    **                  call    B$FCHR
+ 177F    **                  push    ax
+ 1780    **                  call    B$PSSD
+ 1785    **        L00000:
+ 1785    **        I00142:   call    B$EXSA
+ 178A    **                  ret     0006h
+ 178D   0056    
+ 178D   0056    ' Линия символов с кодом code на строчке y начиная с координаты
+                 x1 до x2
+ 178D   0056    SUB WndPuthl (x1, x2, y, code)
+ 178D    **        I00141:
+ 178D    **        L00000:   jmp     I00143
+ 1790    **        WNDPUTHL: mov     cx,0000h
+ 1793    **                  mov     bx,0000h
+ 1796    **                  call    B$ENRA
+ 179B   0056            FOR k = x1 TO x2
+ 179B    **        L00000:   mov     si,0Ah[bp]
+ 179E    **                  int     35h
+ 17A0    **                  db      04h
+ 17A1    **                  int     35h
+ 17A3    **                  db      5Eh
+ 17A4    **                  db      0EAh
+ 17A5    **                  int     3Dh
+ 17A7    **                  mov     si,0Ch[bp]
+ 17AA    **                  int     35h
+ 17AC    **                  db      04h
+ 17AD    **                  jmp     I00145
+ 17B0   0056                    CALL WndPutc(k, y, code)
+ 17B0    **        I00146:
+                                                                      PAGE  62
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 17B0    **        L00000:   lea     ax,0E6h[bp]
+ 17B3    **                  push    ax
+ 17B4    **                  push    08h[bp]
+ 17B7    **                  push    06h[bp]
+ 17BA    **                  call    WNDPUTC
+ 17BF   0056            NEXT k
+ 17BF    **        L00000:   int     35h
+ 17C1    **                  db      46h
+ 17C2    **                  db      0E6h
+ 17C3    **                  int     34h
+ 17C5    **                  db      06h
+ 17C6    **                  dw      <0000803F>
+ 17C8    **        I00145:   int     35h
+ 17CA    **                  db      5Eh
+ 17CB    **                  db      0E6h
+ 17CC    **                  int     3Dh
+ 17CE    **                  int     35h
+ 17D0    **                  db      46h
+ 17D1    **                  db      0EAh
+ 17D2    **                  int     35h
+ 17D4    **                  db      46h
+ 17D5    **                  db      0E6h
+ 17D6    **                  int     3Dh
+ 17D8    **                  call    B$FCMP
+ 17DD    **                  jna     I00146
+ 17DF   0056    END SUB
+ 17DF    **        L00000:
+ 17DF    **        I00144:   call    B$EXSA
+ 17E4    **                  ret     0008h
+ 17E7   0056    
+ 17E7   0056    'рисуем вертикальную линию
+ 17E7   0056    SUB WndPutvl (x, y1, y2, code)
+ 17E7    **        I00143:
+ 17E7    **        L00000:   jmp     I00147
+ 17EA    **        WNDPUTVL: mov     cx,0000h
+ 17ED    **                  mov     bx,0000h
+ 17F0    **                  call    B$ENRA
+ 17F5   0056            FOR k = y1 TO y2
+ 17F5    **        L00000:   mov     si,08h[bp]
+ 17F8    **                  int     35h
+ 17FA    **                  db      04h
+ 17FB    **                  int     35h
+ 17FD    **                  db      5Eh
+ 17FE    **                  db      0EAh
+ 17FF    **                  int     3Dh
+ 1801    **                  mov     si,0Ah[bp]
+ 1804    **                  int     35h
+ 1806    **                  db      04h
+ 1807    **                  jmp     I00149
+ 180A   0056                    CALL WndPutc(x, k, code)
+ 180A    **        I00150:
+ 180A    **        L00000:   push    0Ch[bp]
+ 180D    **                  lea     ax,0E6h[bp]
+ 1810    **                  push    ax
+                                                                      PAGE  63
+                                                                      16 Feb 21
+                                                                      20:58:38
+Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
+
+ 1811    **                  push    06h[bp]
+ 1814    **                  call    WNDPUTC
+ 1819   0056            NEXT k
+ 1819    **        L00000:   int     35h
+ 181B    **                  db      46h
+ 181C    **                  db      0E6h
+ 181D    **                  int     34h
+ 181F    **                  db      06h
+ 1820    **                  dw      <0000803F>
+ 1822    **        I00149:   int     35h
+ 1824    **                  db      5Eh
+ 1825    **                  db      0E6h
+ 1826    **                  int     3Dh
+ 1828    **                  int     35h
+ 182A    **                  db      46h
+ 182B    **                  db      0EAh
+ 182C    **                  int     35h
+ 182E    **                  db      46h
+ 182F    **                  db      0E6h
+ 1830    **                  int     3Dh
+ 1832    **                  call    B$FCMP
+ 1837    **                  jna     I00150
+ 1839   0056    END SUB
+ 1839    **        L00000:
+ 1839    **        I00148:   call    B$EXSA
+ 183E    **                  ret     0008h
+ 1841   0056    
+ 1841   0056    
+ 1841    **        I00147:   call    B$CENP
+ 1E70   0056    
+
+45850 Bytes Available
+36076 Bytes Free
+
+    0 Warning Error(s)
+    0 Severe  Error(s)

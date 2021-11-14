@@ -1,0 +1,19 @@
+CLS
+DIM ch AS STRING
+DIM olo AS STRING
+LINE INPUT olo
+
+TIMER ON
+ON TIMER(1) GOSUB fefe
+
+DO
+    ch = INKEY$
+LOOP WHILE ch <> CHR$(27)
+
+END
+
+fefe:
+    PRINT olo
+    PLAY "a"
+    RETURN
+

@@ -1,0 +1,9 @@
+CLS
+DIM n AS INTEGER
+
+n = VAL("547")
+s$ = STR$(547)
+
+PRINT n
+PRINT s$
+

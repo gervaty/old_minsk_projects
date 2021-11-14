@@ -1,0 +1,6 @@
+CLS
+
+RANDOMIZE TIMER
+PRINT INT(RND * 8) + 1
+
+

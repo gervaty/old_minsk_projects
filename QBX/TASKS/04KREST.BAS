@@ -1,0 +1,16 @@
+CLS
+
+FOR k = 1 TO 25
+    LOCATE k, 39
+    PRINT CHR$(219) + CHR$(219);
+NEXT k
+
+FOR k = 1 TO 80
+    LOCATE 13, k
+    PRINT CHR$(219)
+NEXT k
+
+DO
+LOOP WHILE INKEY$ = ""
+
+

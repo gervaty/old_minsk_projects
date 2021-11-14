@@ -1,0 +1,10 @@
+CLS
+DIM nm AS STRING
+
+LINE INPUT nm
+PRINT LEN(nm)
+
+FOR k = 1 TO LEN(nm)
+    PRINT MID$(nm, k, 1)
+NEXT k
+
